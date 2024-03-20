@@ -10,6 +10,8 @@
 #   2015-07-22 - first version
 # ------------------------------------------------
 
+a=$(echo "aaa")
+
 ######################################
 # target
 ######################################
@@ -78,7 +80,9 @@ Middlewares/Third_Party/FreeRTOS/Source/tasks.c \
 Middlewares/Third_Party/FreeRTOS/Source/timers.c \
 Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c \
 Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c \
-Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c  
+Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c
+
+#Middlewares/Third_Party/FreeRTOS-TCP/Source/portable/NetworkInterface/STM32Fxx/NetworkInterface.c
 
 # ASM sources
 ASM_SOURCES =  \
@@ -168,9 +172,11 @@ CFLAGS += -MMD -MP -MF"$(@:%.o=%.d)"
 #######################################
 
 C_INCLUDES += \
+-IMiddlewares/Third_Party/FreeRTOS-TCP/Source/portable/Compiler/GCC \
 -IMiddlewares/Third_Party/FreeRTOS-TCP/Source/include
+#-IMiddlewares/Third_Party/FreeRTOS-TCP/Source/portable/NetworkInterface/include
 
-C_SOURCE += \
+C_SOURCES += \
 Middlewares/Third_Party/FreeRTOS-TCP/Source/FreeRTOS_ARP.c \
 Middlewares/Third_Party/FreeRTOS-TCP/Source/FreeRTOS_DHCP.c \
 Middlewares/Third_Party/FreeRTOS-TCP/Source/FreeRTOS_DNS.c \
@@ -191,7 +197,12 @@ Middlewares/Third_Party/FreeRTOS-TCP/Source/FreeRTOS_TCP_Transmission.c \
 Middlewares/Third_Party/FreeRTOS-TCP/Source/FreeRTOS_TCP_Utils.c \
 Middlewares/Third_Party/FreeRTOS-TCP/Source/FreeRTOS_TCP_WIN.c \
 Middlewares/Third_Party/FreeRTOS-TCP/Source/FreeRTOS_Tiny_TCP.c \
-Middlewares/Third_Party/FreeRTOS-TCP/Source/FreeRTOS_UDP_IP.c
+Middlewares/Third_Party/FreeRTOS-TCP/Source/FreeRTOS_UDP_IP.c \
+Middlewares/Third_Party/FreeRTOS-TCP/Source/portable/BufferManagement/BufferAllocation_2.c \
+Core/Src/main_networking.c \
+Core/Src/TCPEchoClient_SingleTasks.c
+#Middlewares/Third_Party/FreeRTOS-TCP/Source/portable/NetworkInterface/Common/phyHandling.c
+#Middlewares/Third_Party/FreeRTOS-TCP/Source/portable/NetworkInterface/STM32Fxx/NetworkInterface.c
 
 #######################################
 # LDFLAGS
@@ -256,7 +267,7 @@ clean:
 #######################################
 # ctags
 #######################################
-ctags: $(BUILD_DIR)/$(TARGET).elf:
+ctags: $(BUILD_DIR)/$(TARGET).elf
 	$(CTAGS_PROG) $(CTAGS_OPT) -f ./$(CTAGS_TARGET) .
 
 #######################################
