@@ -172,35 +172,54 @@ CFLAGS += -MMD -MP -MF"$(@:%.o=%.d)"
 #######################################
 
 C_INCLUDES += \
--IMiddlewares/Third_Party/FreeRTOS-TCP/Source/portable/Compiler/GCC \
--IMiddlewares/Third_Party/FreeRTOS-TCP/Source/include
+-IMiddlewares/Third_Party/FreeRTOS-Plus-TCP/Source/portable/Compiler/GCC \
+-IMiddlewares/Third_Party/FreeRTOS-Plus-TCP/Source/include
 #-IMiddlewares/Third_Party/FreeRTOS-TCP/Source/portable/NetworkInterface/include
 
 C_SOURCES += \
-Middlewares/Third_Party/FreeRTOS-TCP/Source/FreeRTOS_ARP.c \
-Middlewares/Third_Party/FreeRTOS-TCP/Source/FreeRTOS_DHCP.c \
-Middlewares/Third_Party/FreeRTOS-TCP/Source/FreeRTOS_DNS.c \
-Middlewares/Third_Party/FreeRTOS-TCP/Source/FreeRTOS_DNS_Cache.c \
-Middlewares/Third_Party/FreeRTOS-TCP/Source/FreeRTOS_DNS_Callback.c \
-Middlewares/Third_Party/FreeRTOS-TCP/Source/FreeRTOS_DNS_Networking.c \
-Middlewares/Third_Party/FreeRTOS-TCP/Source/FreeRTOS_DNS_Parser.c \
-Middlewares/Third_Party/FreeRTOS-TCP/Source/FreeRTOS_ICMP.c \
-Middlewares/Third_Party/FreeRTOS-TCP/Source/FreeRTOS_IP.c \
-Middlewares/Third_Party/FreeRTOS-TCP/Source/FreeRTOS_IP_Timers.c \
-Middlewares/Third_Party/FreeRTOS-TCP/Source/FreeRTOS_IP_Utils.c \
-Middlewares/Third_Party/FreeRTOS-TCP/Source/FreeRTOS_Sockets.c \
-Middlewares/Third_Party/FreeRTOS-TCP/Source/FreeRTOS_Stream_Buffer.c \
-Middlewares/Third_Party/FreeRTOS-TCP/Source/FreeRTOS_TCP_IP.c \
-Middlewares/Third_Party/FreeRTOS-TCP/Source/FreeRTOS_TCP_Reception.c \
-Middlewares/Third_Party/FreeRTOS-TCP/Source/FreeRTOS_TCP_State_Handling.c \
-Middlewares/Third_Party/FreeRTOS-TCP/Source/FreeRTOS_TCP_Transmission.c \
-Middlewares/Third_Party/FreeRTOS-TCP/Source/FreeRTOS_TCP_Utils.c \
-Middlewares/Third_Party/FreeRTOS-TCP/Source/FreeRTOS_TCP_WIN.c \
-Middlewares/Third_Party/FreeRTOS-TCP/Source/FreeRTOS_Tiny_TCP.c \
-Middlewares/Third_Party/FreeRTOS-TCP/Source/FreeRTOS_UDP_IP.c \
-Middlewares/Third_Party/FreeRTOS-TCP/Source/portable/BufferManagement/BufferAllocation_2.c \
-Core/Src/main_networking.c \
-Core/Src/TCPEchoClient_SingleTasks.c
+Middlewares/Third_Party/FreeRTOS-Plus-TCP/Source/FreeRTOS_ARP.c \
+Middlewares/Third_Party/FreeRTOS-Plus-TCP/Source/FreeRTOS_BitConfig.c \
+Middlewares/Third_Party/FreeRTOS-Plus-TCP/Source/FreeRTOS_DHCP.c \
+Middlewares/Third_Party/FreeRTOS-Plus-TCP/Source/FreeRTOS_DHCPv6.c \
+Middlewares/Third_Party/FreeRTOS-Plus-TCP/Source/FreeRTOS_DNS.c \
+Middlewares/Third_Party/FreeRTOS-Plus-TCP/Source/FreeRTOS_DNS_Cache.c \
+Middlewares/Third_Party/FreeRTOS-Plus-TCP/Source/FreeRTOS_DNS_Callback.c \
+Middlewares/Third_Party/FreeRTOS-Plus-TCP/Source/FreeRTOS_DNS_Networking.c \
+Middlewares/Third_Party/FreeRTOS-Plus-TCP/Source/FreeRTOS_DNS_Parser.c \
+Middlewares/Third_Party/FreeRTOS-Plus-TCP/Source/FreeRTOS_ICMP.c \
+Middlewares/Third_Party/FreeRTOS-Plus-TCP/Source/FreeRTOS_IP.c \
+Middlewares/Third_Party/FreeRTOS-Plus-TCP/Source/FreeRTOS_IP_Timers.c \
+Middlewares/Third_Party/FreeRTOS-Plus-TCP/Source/FreeRTOS_IP_Utils.c \
+Middlewares/Third_Party/FreeRTOS-Plus-TCP/Source/FreeRTOS_IPv4.c \
+Middlewares/Third_Party/FreeRTOS-Plus-TCP/Source/FreeRTOS_IPv4_Sockets.c \
+Middlewares/Third_Party/FreeRTOS-Plus-TCP/Source/FreeRTOS_IPv4_Utils.c \
+Middlewares/Third_Party/FreeRTOS-Plus-TCP/Source/FreeRTOS_IPv6.c \
+Middlewares/Third_Party/FreeRTOS-Plus-TCP/Source/FreeRTOS_IPv6_Sockets.c \
+Middlewares/Third_Party/FreeRTOS-Plus-TCP/Source/FreeRTOS_IPv6_Utils.c \
+Middlewares/Third_Party/FreeRTOS-Plus-TCP/Source/FreeRTOS_ND.c \
+Middlewares/Third_Party/FreeRTOS-Plus-TCP/Source/FreeRTOS_RA.c \
+Middlewares/Third_Party/FreeRTOS-Plus-TCP/Source/FreeRTOS_Routing.c \
+Middlewares/Third_Party/FreeRTOS-Plus-TCP/Source/FreeRTOS_Sockets.c \
+Middlewares/Third_Party/FreeRTOS-Plus-TCP/Source/FreeRTOS_Stream_Buffer.c \
+Middlewares/Third_Party/FreeRTOS-Plus-TCP/Source/FreeRTOS_TCP_IP.c \
+Middlewares/Third_Party/FreeRTOS-Plus-TCP/Source/FreeRTOS_TCP_IP_IPv4.c \
+Middlewares/Third_Party/FreeRTOS-Plus-TCP/Source/FreeRTOS_TCP_IP_IPv6.c \
+Middlewares/Third_Party/FreeRTOS-Plus-TCP/Source/FreeRTOS_TCP_Reception.c \
+Middlewares/Third_Party/FreeRTOS-Plus-TCP/Source/FreeRTOS_TCP_State_Handling.c \
+Middlewares/Third_Party/FreeRTOS-Plus-TCP/Source/FreeRTOS_TCP_State_Handling_IPv4.c \
+Middlewares/Third_Party/FreeRTOS-Plus-TCP/Source/FreeRTOS_TCP_State_Handling_IPv6.c \
+Middlewares/Third_Party/FreeRTOS-Plus-TCP/Source/FreeRTOS_TCP_Transmission.c \
+Middlewares/Third_Party/FreeRTOS-Plus-TCP/Source/FreeRTOS_TCP_Transmission_IPv4.c \
+Middlewares/Third_Party/FreeRTOS-Plus-TCP/Source/FreeRTOS_TCP_Transmission_IPv6.c \
+Middlewares/Third_Party/FreeRTOS-Plus-TCP/Source/FreeRTOS_TCP_Utils.c \
+Middlewares/Third_Party/FreeRTOS-Plus-TCP/Source/FreeRTOS_TCP_Utils_IPv4.c \
+Middlewares/Third_Party/FreeRTOS-Plus-TCP/Source/FreeRTOS_TCP_Utils_IPv6.c \
+Middlewares/Third_Party/FreeRTOS-Plus-TCP/Source/FreeRTOS_TCP_WIN.c \
+Middlewares/Third_Party/FreeRTOS-Plus-TCP/Source/FreeRTOS_Tiny_TCP.c \
+Middlewares/Third_Party/FreeRTOS-Plus-TCP/Source/FreeRTOS_UDP_IP.c \
+Middlewares/Third_Party/FreeRTOS-Plus-TCP/Source/FreeRTOS_UDP_IPv4.c \
+Middlewares/Third_Party/FreeRTOS-Plus-TCP/Source/FreeRTOS_UDP_IPv6.c \
+Middlewares/Third_Party/FreeRTOS-Plus-TCP/Source/portable/BufferManagement/BufferAllocation_2.c
 #Middlewares/Third_Party/FreeRTOS-TCP/Source/portable/NetworkInterface/Common/phyHandling.c
 #Middlewares/Third_Party/FreeRTOS-TCP/Source/portable/NetworkInterface/STM32Fxx/NetworkInterface.c
 

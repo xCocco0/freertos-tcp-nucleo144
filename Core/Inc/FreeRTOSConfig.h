@@ -134,6 +134,73 @@ standard names. */
 
 /* USER CODE BEGIN Defines */
 /* Section where parameter definitions can be added (for instance, to override default ones in FreeRTOS.h) */
+
+/* networking definitions */
+#define configMAC_ISR_SIMULATOR_PRIORITY	( configMAX_PRIORITIES - 1 )
+#define ipconfigUSE_NETWORK_EVENT_HOOK 1
+//#define ipconfigSOCK_DEFAULT_RECEIVE_BLOCK_TIME  pdMS_TO_TICKS(5000)
+#define configNETWORK_INTERFACE_TO_USE 1L
+
+/* The address of an echo server that will be used by the two demo echo client
+tasks.
+http://www.freertos.org/FreeRTOS-Plus/FreeRTOS_Plus_TCP/TCP_Echo_Clients.html
+http://www.freertos.org/FreeRTOS-Plus/FreeRTOS_Plus_TCP/UDP_Echo_Clients.html */
+
+#define configECHO_SERVER_ADDR0	172
+#define configECHO_SERVER_ADDR1 19
+#define configECHO_SERVER_ADDR2 195
+#define configECHO_SERVER_ADDR3 36
+
+/* Default MAC address configuration.  The demo creates a virtual network
+connection that uses this MAC address by accessing the raw Ethernet/WiFi data
+to and from a real network connection on the host PC.  See the
+configNETWORK_INTERFACE_TO_USE definition above for information on how to
+configure the real network connection to use. */
+#define configMAC_ADDR0		0x00
+#define configMAC_ADDR1		0x11
+#define configMAC_ADDR2		0x22
+#define configMAC_ADDR3		0x33
+#define configMAC_ADDR4		0x44
+#define configMAC_ADDR5		0x41
+
+/* Default IP address configuration.  Used in ipconfigUSE_DNS is set to 0, or
+ipconfigUSE_DNS is set to 1 but a DNS server cannot be contacted. */
+
+#define configIP_ADDR0		172
+#define configIP_ADDR1		19
+#define configIP_ADDR2		195
+#define configIP_ADDR3		37
+
+/* Default gateway IP address configuration.  Used in ipconfigUSE_DNS is set to
+0, or ipconfigUSE_DNS is set to 1 but a DNS server cannot be contacted. */
+
+#define configGATEWAY_ADDR0	172
+#define configGATEWAY_ADDR1	19
+#define configGATEWAY_ADDR2	192
+#define configGATEWAY_ADDR3	1
+
+/* Default DNS server configuration.  OpenDNS addresses are 208.67.222.222 and
+208.67.220.220.  Used in ipconfigUSE_DNS is set to 0, or ipconfigUSE_DNS is set
+to 1 but a DNS server cannot be contacted.*/
+
+#define configDNS_SERVER_ADDR0	10
+#define configDNS_SERVER_ADDR1  4
+#define configDNS_SERVER_ADDR2	4
+#define configDNS_SERVER_ADDR3	10
+
+/* Default netmask configuration.  Used in ipconfigUSE_DNS is set to 0, or
+ipconfigUSE_DNS is set to 1 but a DNS server cannot be contacted. */
+#define configNET_MASK0		255
+#define configNET_MASK1	  255
+#define configNET_MASK2	  240
+#define configNET_MASK3		0
+
+/* The UDP port to which print messages are sent. */
+#define configPRINT_PORT	( 15000 )
+
+/* Requirements for TCP Addon */
+#define configUSE_COUNTING_SEMAPHORES 1
+#define INCLUDE_xTaskGetCurrentTaskHandle 1
 /* USER CODE END Defines */
 
 #endif /* FREERTOS_CONFIG_H */
