@@ -1,26 +1,11 @@
-/* USER CODE BEGIN Header */
-/**
- ******************************************************************************
- * @file           : main.c
- * @brief          : Main program body
- ******************************************************************************
- * @attention
- *
- * Copyright (c) 2024 STMicroelectronics.
- * All rights reserved.
- *
- * This software is licensed under terms that can be found in the LICENSE file
- * in the root directory of this software component.
- * If no LICENSE file comes with this software, it is provided AS-IS.
- *
- ******************************************************************************
- */
+
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "string.h"
 #include "cmsis_os.h"
 
 #include "FreeRTOS_IP.h"
+#include "FreeRTOS_Sockets.h"
 
 /* Private typedef -----------------------------------------------------------*/
 
@@ -30,28 +15,21 @@
 
 /* Private variables ---------------------------------------------------------*/
 
-ETH_TxPacketConfig TxConfig;
-ETH_DMADescTypeDef  DMARxDscrTab[ETH_RX_DESC_CNT]; /* Ethernet Rx DMA Descriptors */
-ETH_DMADescTypeDef  DMATxDscrTab[ETH_TX_DESC_CNT]; /* Ethernet Tx DMA Descriptors */
-
-ETH_HandleTypeDef heth;
-
 UART_HandleTypeDef huart3;
 
 PCD_HandleTypeDef hpcd_USB_OTG_FS;
+
+RNG_HandleTypeDef hrng;
 
 osThreadId defaultTaskHandle;
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-static void MX_ETH_Init(void);
 static void MX_USART3_UART_Init(void);
 static void MX_USB_OTG_FS_PCD_Init(void);
+static void MX_RNG_Init(void);
 void StartDefaultTask(void const * argument);
-
-void main_tcp_echo_client_tasks( void );
-
 
 /**
  * @brief  The application entry point.
@@ -59,38 +37,137 @@ void main_tcp_echo_client_tasks( void );
  */
 int main(void)
 {
-	const uint8_t ucIPAddress[ ipIP_ADDRESS_LENGTH_BYTES ] = { 192, 168, 1, 116 };
-	const uint8_t ucNetMask[ ipIP_ADDRESS_LENGTH_BYTES ] = { 255, 255, 255, 0 };
-	const uint8_t ucGatewayAddress[ ipIP_ADDRESS_LENGTH_BYTES ] = { 192, 168, 1, 1 };
-	const uint8_t ucDNSServerAddress[ ipIP_ADDRESS_LENGTH_BYTES ] = { 8, 8, 8, 8 };
+		const uint8_t ucIPAddress[ ipIP_ADDRESS_LENGTH_BYTES ] = { 192, 168, 1, 116 };
+		const uint8_t ucNetMask[ ipIP_ADDRESS_LENGTH_BYTES ] = { 255, 255, 255, 0 };
+		const uint8_t ucGatewayAddress[ ipIP_ADDRESS_LENGTH_BYTES ] = { 192, 168, 1, 1 };
+		const uint8_t ucDNSServerAddress[ ipIP_ADDRESS_LENGTH_BYTES ] = { 8, 8, 8, 8 };
 
-	const uint8_t ucMACAddress[ ipMAC_ADDRESS_LENGTH_BYTES ] = { 0x00, 0x80, 0xe1, 0x00, 0x00, 0x01 };
+		const uint8_t ucMACAddress[ ipMAC_ADDRESS_LENGTH_BYTES ] = { 0x00, 0x80, 0xe1, 0x00, 0x00, 0x01 };
 
-	/* MCU Configuration--------------------------------------------------------*/
+		static NetworkInterface_t xInterfaces[1];
+		static NetworkEndPoint_t xEndPoints[1];
 
-	/* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-	HAL_Init();
+		/* MCU Configuration--------------------------------------------------------*/
 
-	/* Configure the system clock */
-	SystemClock_Config();
+		/* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+		HAL_Init();
 
-	/* Initialize all configured peripherals */
-	MX_GPIO_Init();
-	//MX_ETH_Init();
-	MX_USART3_UART_Init();
-	MX_USB_OTG_FS_PCD_Init();
+		/* Configure the system clock */
+		SystemClock_Config();
 
-	/* Create the thread(s) */
-	/* definition and creation of defaultTask */
-	osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 128);
-	defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
+		/* Initialize all configured peripherals */
+		MX_GPIO_Init();
+		MX_USART3_UART_Init();
+		MX_USB_OTG_FS_PCD_Init();
+		MX_RNG_Init();
 
-	/* Start scheduler */
-	osKernelStart();
+		pxFillInterfaceDescriptor(0, &(xInterfaces[0]));
+		FreeRTOS_FillEndPoint(
+						&(xInterfaces[0]), &(xEndPoints[0]), ucIPAddress,
+						ucNetMask, ucGatewayAddress, ucDNSServerAddress, ucMACAddress);
 
-	/* Infinite loop */
-	for(;;);
+		FreeRTOS_IPInit_Multi();
+
+		Socket_t xSock = FreeRTOS_socket(FREERTOS_AF_INET4,
+						FREERTOS_SOCK_DGRAM, 
+						FREERTOS_IPPROTO_UDP);
+		configASSERT(xSock != FREERTOS_INVALID_SOCKET);
+
+		socklen_t xSize = sizeof(struct freertos_sockaddr);
+		FreeRTOS_bind(xSock, NULL, xSize);
+
+		struct freertos_sockaddr xDestinationAddress;
+		xDestinationAddress.sin_addr = FreeRTOS_inet_addr("255.255.255.255");
+		xDestinationAddress.sin_port = FreeRTOS_htons(10000);
+
+		uint8_t cMsg[] = "Hello world";
+
+		for(;;) {
+				FreeRTOS_sendto(xSock, cMsg, sizeof(cMsg), 0,
+								&xDestinationAddress, sizeof(xDestinationAddress));
+
+				vTaskDelay(1000UL / portTICK_PERIOD_MS);
+		}
+
+		/* Create the thread(s) */
+		/* definition and creation of defaultTask */
+		osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 128);
+		defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
+
+		/* Start scheduler */
+		osKernelStart();
+
+		/* Infinite loop */
+		for(;;);
 }
+
+/* Generate TCP start seq no */
+uint32_t ulApplicationGetNextSequenceNumber( uint32_t ulSourceAddress,
+				uint16_t usSourcePort,
+				uint32_t ulDestinationAddress,
+				uint16_t usDestinationPort )
+{
+		uint32_t pulNumber = 0;
+
+		xApplicationGetRandomNumber( &pulNumber );
+		return pulNumber;
+}
+
+BaseType_t xApplicationGetRandomNumber( uint32_t *pulValue )
+{
+		HAL_StatusTypeDef xResult;
+		BaseType_t xReturn;
+		uint32_t ulValue;
+
+		xResult = HAL_RNG_GenerateRandomNumber( &hrng, &ulValue );
+		if( xResult == HAL_OK )
+		{
+				xReturn = pdPASS;
+				*pulValue = ulValue;
+		}
+		else
+		{
+				xReturn = pdFAIL;
+		}
+		return xReturn;
+}
+void vApplicationIPNetworkEventHook( eIPCallbackEvent_t eNetworkEvent )
+{
+		uint32_t ulIPAddress, ulNetMask, ulGatewayAddress, ulDNSServerAddress;
+		char cBuffer[ 16 ];
+		static BaseType_t xTasksAlreadyCreated = pdFALSE;
+
+		/* If the network has just come up...*/
+		if( eNetworkEvent == eNetworkUp )
+		{
+				/* Create the tasks that use the IP stack if they have not already been
+				   created. */
+				if( xTasksAlreadyCreated == pdFALSE )
+				{
+						/* Demos that use the network are created after the network is
+						   up. */
+						//			configPRINTF( ( "---------STARTING DEMO---------\r\n" ) );
+						//			vStartSimpleMQTTDemo();
+						xTasksAlreadyCreated = pdTRUE;
+				}
+
+				/*
+				   FreeRTOS_GetAddressConfiguration( &ulIPAddress, &ulNetMask, &ulGatewayAddress, &ulDNSServerAddress );
+				   FreeRTOS_inet_ntoa( ulIPAddress, cBuffer );
+				   FreeRTOS_printf( ( "\r\n\r\nIP Address: %s\r\n", cBuffer ) );
+
+				   FreeRTOS_inet_ntoa( ulNetMask, cBuffer );
+				   FreeRTOS_printf( ( "Subnet Mask: %s\r\n", cBuffer ) );
+
+				   FreeRTOS_inet_ntoa( ulGatewayAddress, cBuffer );
+				   FreeRTOS_printf( ( "Gateway Address: %s\r\n", cBuffer ) );
+
+				   FreeRTOS_inet_ntoa( ulDNSServerAddress, cBuffer );
+				   FreeRTOS_printf( ( "DNS Server Address: %s\r\n\r\n\r\n", cBuffer ) );
+				   */
+		}
+}
+
 
 /**
  * @brief System Clock Configuration
@@ -98,93 +175,45 @@ int main(void)
  */
 void SystemClock_Config(void)
 {
-	RCC_OscInitTypeDef RCC_OscInitStruct = {0};
-	RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+		RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+		RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
 
-	/** Configure the main internal regulator output voltage
-	*/
-	__HAL_RCC_PWR_CLK_ENABLE();
-	__HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
+		/** Configure the main internal regulator output voltage
+		*/
+		__HAL_RCC_PWR_CLK_ENABLE();
+		__HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
 
-	/** Initializes the RCC Oscillators according to the specified parameters
-	 * in the RCC_OscInitTypeDef structure.
-	 */
-	RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
-	RCC_OscInitStruct.HSEState = RCC_HSE_BYPASS;
-	RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-	RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-	RCC_OscInitStruct.PLL.PLLM = 4;
-	RCC_OscInitStruct.PLL.PLLN = 168;
-	RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
-	RCC_OscInitStruct.PLL.PLLQ = 7;
-	if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
-	{
-		Error_Handler();
-	}
+		/** Initializes the RCC Oscillators according to the specified parameters
+		 * in the RCC_OscInitTypeDef structure.
+		 */
+		RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+		RCC_OscInitStruct.HSEState = RCC_HSE_BYPASS;
+		RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+		RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+		RCC_OscInitStruct.PLL.PLLM = 4;
+		RCC_OscInitStruct.PLL.PLLN = 168;
+		RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
+		RCC_OscInitStruct.PLL.PLLQ = 7;
+		if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+		{
+				Error_Handler();
+		}
 
-	/** Initializes the CPU, AHB and APB buses clocks
-	*/
-	RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-		|RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
-	RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
-	RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-	RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
-	RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
+		/** Initializes the CPU, AHB and APB buses clocks
+		*/
+		RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
+				|RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+		RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+		RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+		RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
+		RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
 
-	if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5) != HAL_OK)
-	{
-		Error_Handler();
-	}
+		if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5) != HAL_OK)
+		{
+				Error_Handler();
+		}
 }
 
-/**
- * @brief ETH Initialization Function
- * @param None
- * @retval None
- */
-static void MX_ETH_Init(void)
-{
-
-	/* USER CODE BEGIN ETH_Init 0 */
-
-	/* USER CODE END ETH_Init 0 */
-
-	static uint8_t MACAddr[6];
-
-	/* USER CODE BEGIN ETH_Init 1 */
-
-	/* USER CODE END ETH_Init 1 */
-	heth.Instance = ETH;
-	MACAddr[0] = 0x00;
-	MACAddr[1] = 0x80;
-	MACAddr[2] = 0xE1;
-	MACAddr[3] = 0x00;
-	MACAddr[4] = 0x00;
-	MACAddr[5] = 0x00;
-	heth.Init.MACAddr = &MACAddr[0];
-	heth.Init.MediaInterface = HAL_ETH_RMII_MODE;
-	heth.Init.TxDesc = DMATxDscrTab;
-	heth.Init.RxDesc = DMARxDscrTab;
-	heth.Init.RxBuffLen = 1524;
-
-	/* USER CODE BEGIN MACADDRESS */
-
-	/* USER CODE END MACADDRESS */
-
-	if (HAL_ETH_Init(&heth) != HAL_OK)
-	{
-		Error_Handler();
-	}
-
-	memset(&TxConfig, 0 , sizeof(ETH_TxPacketConfig));
-	TxConfig.Attributes = ETH_TX_PACKETS_FEATURES_CSUM | ETH_TX_PACKETS_FEATURES_CRCPAD;
-	TxConfig.ChecksumCtrl = ETH_CHECKSUM_IPHDR_PAYLOAD_INSERT_PHDR_CALC;
-	TxConfig.CRCPadCtrl = ETH_CRC_PAD_INSERT;
-	/* USER CODE BEGIN ETH_Init 2 */
-
-	/* USER CODE END ETH_Init 2 */
-
-}
 
 /**
  * @brief USART3 Initialization Function
@@ -194,28 +223,28 @@ static void MX_ETH_Init(void)
 static void MX_USART3_UART_Init(void)
 {
 
-	/* USER CODE BEGIN USART3_Init 0 */
+		/* USER CODE BEGIN USART3_Init 0 */
 
-	/* USER CODE END USART3_Init 0 */
+		/* USER CODE END USART3_Init 0 */
 
-	/* USER CODE BEGIN USART3_Init 1 */
+		/* USER CODE BEGIN USART3_Init 1 */
 
-	/* USER CODE END USART3_Init 1 */
-	huart3.Instance = USART3;
-	huart3.Init.BaudRate = 115200;
-	huart3.Init.WordLength = UART_WORDLENGTH_8B;
-	huart3.Init.StopBits = UART_STOPBITS_1;
-	huart3.Init.Parity = UART_PARITY_NONE;
-	huart3.Init.Mode = UART_MODE_TX_RX;
-	huart3.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-	huart3.Init.OverSampling = UART_OVERSAMPLING_16;
-	if (HAL_UART_Init(&huart3) != HAL_OK)
-	{
-		Error_Handler();
-	}
-	/* USER CODE BEGIN USART3_Init 2 */
+		/* USER CODE END USART3_Init 1 */
+		huart3.Instance = USART3;
+		huart3.Init.BaudRate = 115200;
+		huart3.Init.WordLength = UART_WORDLENGTH_8B;
+		huart3.Init.StopBits = UART_STOPBITS_1;
+		huart3.Init.Parity = UART_PARITY_NONE;
+		huart3.Init.Mode = UART_MODE_TX_RX;
+		huart3.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+		huart3.Init.OverSampling = UART_OVERSAMPLING_16;
+		if (HAL_UART_Init(&huart3) != HAL_OK)
+		{
+				Error_Handler();
+		}
+		/* USER CODE BEGIN USART3_Init 2 */
 
-	/* USER CODE END USART3_Init 2 */
+		/* USER CODE END USART3_Init 2 */
 
 }
 
@@ -227,30 +256,30 @@ static void MX_USART3_UART_Init(void)
 static void MX_USB_OTG_FS_PCD_Init(void)
 {
 
-	/* USER CODE BEGIN USB_OTG_FS_Init 0 */
+		/* USER CODE BEGIN USB_OTG_FS_Init 0 */
 
-	/* USER CODE END USB_OTG_FS_Init 0 */
+		/* USER CODE END USB_OTG_FS_Init 0 */
 
-	/* USER CODE BEGIN USB_OTG_FS_Init 1 */
+		/* USER CODE BEGIN USB_OTG_FS_Init 1 */
 
-	/* USER CODE END USB_OTG_FS_Init 1 */
-	hpcd_USB_OTG_FS.Instance = USB_OTG_FS;
-	hpcd_USB_OTG_FS.Init.dev_endpoints = 4;
-	hpcd_USB_OTG_FS.Init.speed = PCD_SPEED_FULL;
-	hpcd_USB_OTG_FS.Init.dma_enable = DISABLE;
-	hpcd_USB_OTG_FS.Init.phy_itface = PCD_PHY_EMBEDDED;
-	hpcd_USB_OTG_FS.Init.Sof_enable = ENABLE;
-	hpcd_USB_OTG_FS.Init.low_power_enable = DISABLE;
-	hpcd_USB_OTG_FS.Init.lpm_enable = DISABLE;
-	hpcd_USB_OTG_FS.Init.vbus_sensing_enable = ENABLE;
-	hpcd_USB_OTG_FS.Init.use_dedicated_ep1 = DISABLE;
-	if (HAL_PCD_Init(&hpcd_USB_OTG_FS) != HAL_OK)
-	{
-		Error_Handler();
-	}
-	/* USER CODE BEGIN USB_OTG_FS_Init 2 */
+		/* USER CODE END USB_OTG_FS_Init 1 */
+		hpcd_USB_OTG_FS.Instance = USB_OTG_FS;
+		hpcd_USB_OTG_FS.Init.dev_endpoints = 4;
+		hpcd_USB_OTG_FS.Init.speed = PCD_SPEED_FULL;
+		hpcd_USB_OTG_FS.Init.dma_enable = DISABLE;
+		hpcd_USB_OTG_FS.Init.phy_itface = PCD_PHY_EMBEDDED;
+		hpcd_USB_OTG_FS.Init.Sof_enable = ENABLE;
+		hpcd_USB_OTG_FS.Init.low_power_enable = DISABLE;
+		hpcd_USB_OTG_FS.Init.lpm_enable = DISABLE;
+		hpcd_USB_OTG_FS.Init.vbus_sensing_enable = ENABLE;
+		hpcd_USB_OTG_FS.Init.use_dedicated_ep1 = DISABLE;
+		if (HAL_PCD_Init(&hpcd_USB_OTG_FS) != HAL_OK)
+		{
+				Error_Handler();
+		}
+		/* USER CODE BEGIN USB_OTG_FS_Init 2 */
 
-	/* USER CODE END USB_OTG_FS_Init 2 */
+		/* USER CODE END USB_OTG_FS_Init 2 */
 
 }
 
@@ -261,58 +290,85 @@ static void MX_USB_OTG_FS_PCD_Init(void)
  */
 static void MX_GPIO_Init(void)
 {
-	GPIO_InitTypeDef GPIO_InitStruct = {0};
-	/* USER CODE BEGIN MX_GPIO_Init_1 */
-	/* USER CODE END MX_GPIO_Init_1 */
+		GPIO_InitTypeDef GPIO_InitStruct = {0};
+		/* USER CODE BEGIN MX_GPIO_Init_1 */
+		/* USER CODE END MX_GPIO_Init_1 */
 
-	/* GPIO Ports Clock Enable */
-	__HAL_RCC_GPIOC_CLK_ENABLE();
-	__HAL_RCC_GPIOH_CLK_ENABLE();
-	__HAL_RCC_GPIOA_CLK_ENABLE();
-	__HAL_RCC_GPIOB_CLK_ENABLE();
-	__HAL_RCC_GPIOD_CLK_ENABLE();
-	__HAL_RCC_GPIOG_CLK_ENABLE();
+		/* GPIO Ports Clock Enable */
+		__HAL_RCC_GPIOC_CLK_ENABLE();
+		__HAL_RCC_GPIOH_CLK_ENABLE();
+		__HAL_RCC_GPIOA_CLK_ENABLE();
+		__HAL_RCC_GPIOB_CLK_ENABLE();
+		__HAL_RCC_GPIOD_CLK_ENABLE();
+		__HAL_RCC_GPIOG_CLK_ENABLE();
 
-	/*Configure GPIO pin Output Level */
-	HAL_GPIO_WritePin(GPIOB, LD1_Pin|LD3_Pin|LD2_Pin, GPIO_PIN_RESET);
+		/*Configure GPIO pin Output Level */
+		HAL_GPIO_WritePin(GPIOB, LD1_Pin|LD3_Pin|LD2_Pin, GPIO_PIN_RESET);
 
-	/*Configure GPIO pin Output Level */
-	HAL_GPIO_WritePin(USB_PowerSwitchOn_GPIO_Port, USB_PowerSwitchOn_Pin, GPIO_PIN_RESET);
+		/*Configure GPIO pin Output Level */
+		HAL_GPIO_WritePin(USB_PowerSwitchOn_GPIO_Port, USB_PowerSwitchOn_Pin, GPIO_PIN_RESET);
 
-	/*Configure GPIO pin : USER_Btn_Pin */
-	GPIO_InitStruct.Pin = USER_Btn_Pin;
-	GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-	GPIO_InitStruct.Pull = GPIO_NOPULL;
-	HAL_GPIO_Init(USER_Btn_GPIO_Port, &GPIO_InitStruct);
+		/*Configure GPIO pin : USER_Btn_Pin */
+		GPIO_InitStruct.Pin = USER_Btn_Pin;
+		GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+		GPIO_InitStruct.Pull = GPIO_NOPULL;
+		HAL_GPIO_Init(USER_Btn_GPIO_Port, &GPIO_InitStruct);
 
-	/*Configure GPIO pin : PA0 */
-	GPIO_InitStruct.Pin = GPIO_PIN_0;
-	GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-	GPIO_InitStruct.Pull = GPIO_NOPULL;
-	HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+		/*Configure GPIO pin : PA0 */
+		GPIO_InitStruct.Pin = GPIO_PIN_0;
+		GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+		GPIO_InitStruct.Pull = GPIO_NOPULL;
+		HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-	/*Configure GPIO pins : LD1_Pin LD3_Pin LD2_Pin */
-	GPIO_InitStruct.Pin = LD1_Pin|LD3_Pin|LD2_Pin;
-	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-	GPIO_InitStruct.Pull = GPIO_NOPULL;
-	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-	HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+		/*Configure GPIO pins : LD1_Pin LD3_Pin LD2_Pin */
+		GPIO_InitStruct.Pin = LD1_Pin|LD3_Pin|LD2_Pin;
+		GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+		GPIO_InitStruct.Pull = GPIO_NOPULL;
+		GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+		HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-	/*Configure GPIO pin : USB_PowerSwitchOn_Pin */
-	GPIO_InitStruct.Pin = USB_PowerSwitchOn_Pin;
-	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-	GPIO_InitStruct.Pull = GPIO_NOPULL;
-	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-	HAL_GPIO_Init(USB_PowerSwitchOn_GPIO_Port, &GPIO_InitStruct);
+		/*Configure GPIO pin : USB_PowerSwitchOn_Pin */
+		GPIO_InitStruct.Pin = USB_PowerSwitchOn_Pin;
+		GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+		GPIO_InitStruct.Pull = GPIO_NOPULL;
+		GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+		HAL_GPIO_Init(USB_PowerSwitchOn_GPIO_Port, &GPIO_InitStruct);
 
-	/*Configure GPIO pin : USB_OverCurrent_Pin */
-	GPIO_InitStruct.Pin = USB_OverCurrent_Pin;
-	GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-	GPIO_InitStruct.Pull = GPIO_NOPULL;
-	HAL_GPIO_Init(USB_OverCurrent_GPIO_Port, &GPIO_InitStruct);
+		/*Configure GPIO pin : USB_OverCurrent_Pin */
+		GPIO_InitStruct.Pin = USB_OverCurrent_Pin;
+		GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+		GPIO_InitStruct.Pull = GPIO_NOPULL;
+		HAL_GPIO_Init(USB_OverCurrent_GPIO_Port, &GPIO_InitStruct);
 
-	/* USER CODE BEGIN MX_GPIO_Init_2 */
-	/* USER CODE END MX_GPIO_Init_2 */
+		/* USER CODE BEGIN MX_GPIO_Init_2 */
+		/* USER CODE END MX_GPIO_Init_2 */
+}
+
+
+/**
+ * @brief RNG Initialization Function
+ * @param None
+ * @retval None
+ */
+static void MX_RNG_Init(void)
+{
+
+		/* USER CODE BEGIN RNG_Init 0 */
+
+		/* USER CODE END RNG_Init 0 */
+
+		/* USER CODE BEGIN RNG_Init 1 */
+
+		/* USER CODE END RNG_Init 1 */
+		hrng.Instance = RNG;
+		if (HAL_RNG_Init(&hrng) != HAL_OK)
+		{
+				Error_Handler();
+		}
+		/* USER CODE BEGIN RNG_Init 2 */
+
+		/* USER CODE END RNG_Init 2 */
+
 }
 
 /* USER CODE BEGIN 4 */
@@ -328,14 +384,14 @@ static void MX_GPIO_Init(void)
 /* USER CODE END Header_StartDefaultTask */
 void StartDefaultTask(void const * argument)
 {
-	/* USER CODE BEGIN 5 */
-	/* Infinite loop */
-	for(;;)
-	{
-		HAL_GPIO_TogglePin(GPIOB, LD1_Pin);
-		osDelay(1);
-	}
-	/* USER CODE END 5 */
+		/* USER CODE BEGIN 5 */
+		/* Infinite loop */
+		for(;;)
+		{
+				HAL_GPIO_TogglePin(GPIOB, LD1_Pin);
+				osDelay(1);
+		}
+		/* USER CODE END 5 */
 }
 
 /**
@@ -348,15 +404,15 @@ void StartDefaultTask(void const * argument)
  */
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-	/* USER CODE BEGIN Callback 0 */
+		/* USER CODE BEGIN Callback 0 */
 
-	/* USER CODE END Callback 0 */
-	if (htim->Instance == TIM6) {
-		HAL_IncTick();
-	}
-	/* USER CODE BEGIN Callback 1 */
+		/* USER CODE END Callback 0 */
+		if (htim->Instance == TIM6) {
+				HAL_IncTick();
+		}
+		/* USER CODE BEGIN Callback 1 */
 
-	/* USER CODE END Callback 1 */
+		/* USER CODE END Callback 1 */
 }
 
 /**
@@ -365,13 +421,13 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
  */
 void Error_Handler(void)
 {
-	/* USER CODE BEGIN Error_Handler_Debug */
-	/* User can add his own implementation to report the HAL error return state */
-	__disable_irq();
-	while (1)
-	{
-	}
-	/* USER CODE END Error_Handler_Debug */
+		/* USER CODE BEGIN Error_Handler_Debug */
+		/* User can add his own implementation to report the HAL error return state */
+		__disable_irq();
+		while (1)
+		{
+		}
+		/* USER CODE END Error_Handler_Debug */
 }
 
 #ifdef  USE_FULL_ASSERT
@@ -384,9 +440,9 @@ void Error_Handler(void)
  */
 void assert_failed(uint8_t *file, uint32_t line)
 {
-	/* USER CODE BEGIN 6 */
-	/* User can add his own implementation to report the file name and line number,
+		/* USER CODE BEGIN 6 */
+		/* User can add his own implementation to report the file name and line number,
 ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
-	/* USER CODE END 6 */
+		/* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
