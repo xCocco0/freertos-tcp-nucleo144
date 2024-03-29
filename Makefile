@@ -6,12 +6,11 @@
 # 	using CubeMX
 # ------------------------------------------------
 
-a=$(echo "aaa")
-
 ######################################
 # target
 ######################################
 TARGET = test
+RMFLAGS = "-r"
 
 ######################################
 # ctags variables
@@ -322,7 +321,7 @@ LIBDIR =
 LDFLAGS = $(MCU) -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
 
 # default action: build all
-all: $(BUILD_DIR)/$(TARGET).elf $(BUILD_DIR)/$(TARGET).hex $(BUILD_DIR)/$(TARGET).bin ctags
+all: $(BUILD_DIR)/$(TARGET).elf $(BUILD_DIR)/$(TARGET).hex $(BUILD_DIR)/$(TARGET).bin tags
 	@echo Build target compiled successfully
 
 
@@ -374,8 +373,8 @@ $(BUILD_DIR):
 # clean up
 #######################################
 clean:
-	-rm -fR $(BUILD_DIR)
-	-rm -f $(CTAGS_TARGET)
+	-$(RM) $(RMFLAGS) $(BUILD_DIR)
+	-$(RM) $(RMFLAGS) $(CTAGS_TARGET)
   
 #######################################
 # dependencies
@@ -385,12 +384,12 @@ clean:
 #######################################
 # ctags
 #######################################
-ctags: $(BUILD_DIR)/$(TARGET).elf
+tags: $(BUILD_DIR)/$(TARGET).elf
 	$(CTAGS_PROG) $(CTAGS_OPT) -f ./$(CTAGS_TARGET) .
 
 #######################################
 # .phony
 #######################################
-.phony: clean ctags
+.phony: clean
 
 # *** EOF ***
