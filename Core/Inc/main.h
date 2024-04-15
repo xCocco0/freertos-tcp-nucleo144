@@ -83,6 +83,10 @@ void Error_Handler(void);
 #define STLK_RX_GPIO_Port GPIOD
 #define STLK_TX_Pin GPIO_PIN_9
 #define STLK_TX_GPIO_Port GPIOD
+#define USART2_RX_Pin GPIO_PIN_6
+#define USART2_RX_GPIO_Port GPIOD
+#define USART2_TX_Pin GPIO_PIN_5
+#define USART2_TX_GPIO_Port GPIOD
 #define USB_PowerSwitchOn_Pin GPIO_PIN_6
 #define USB_PowerSwitchOn_GPIO_Port GPIOG
 #define USB_OverCurrent_Pin GPIO_PIN_7

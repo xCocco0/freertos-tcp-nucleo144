@@ -10,4 +10,10 @@
 #define ipconfigUSE_DHCP ipconfigDISABLE
 #define ipconfigIPv4_BACKWARD_COMPATIBLE ipconfigENABLE
 
+#define ipconfigUSE_RMII ipconfigENABLE
+
+#ifdef DEBUG
+#include "IPTraceMacro.h"
+#endif
+
 #endif /* FREERTOS_IP_CONFIG_H */

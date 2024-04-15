@@ -220,7 +220,30 @@ void HAL_UART_MspInit(UART_HandleTypeDef* huart)
   /* USER CODE BEGIN USART3_MspInit 1 */
 
   /* USER CODE END USART3_MspInit 1 */
+  } else if(huart->Instance==USART2) {
+  /* USER CODE BEGIN USART3_MspInit 0 */
+
+  /* USER CODE END USART3_MspInit 0 */
+    /* Peripheral clock enable */
+    __HAL_RCC_USART2_CLK_ENABLE();
+
+    __HAL_RCC_GPIOD_CLK_ENABLE();
+    /**USART3 GPIO Configuration
+    PD6     ------> USART2_TX
+    PD7     ------> USART2_RX
+    */
+    GPIO_InitStruct.Pin = USART2_RX_Pin|USART2_TX_Pin;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+    GPIO_InitStruct.Alternate = GPIO_AF7_USART2;
+    HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+
+  /* USER CODE BEGIN USART3_MspInit 1 */
+
+  /* USER CODE END USART3_MspInit 1 */
   }
+
 
 }
 
@@ -249,6 +272,11 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* huart)
   /* USER CODE BEGIN USART3_MspDeInit 1 */
 
   /* USER CODE END USART3_MspDeInit 1 */
+  } else if(huart->Instance==USART2)
+  {
+    __HAL_RCC_USART2_CLK_DISABLE();
+
+    HAL_GPIO_DeInit(GPIOD, GPIO_PIN_6|GPIO_PIN_7);
   }
 
 }
@@ -294,7 +322,6 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* hpcd)
 
   /* USER CODE END USB_OTG_FS_MspInit 1 */
   }
-
 }
 
 /**

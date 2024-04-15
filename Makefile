@@ -10,24 +10,28 @@
 # target
 ######################################
 TARGET = test
-RMFLAGS = "-r"
+RMFLAGS = -r
 
 ######################################
 # ctags variables
 ######################################
 
+CTAGS = 1
 CTAGS_PROG = ctags
 CTAGS_OPT = --recurse=yes --exclude=build --tag-relative --extra=+f
 CTAGS_TARGET = tags
 
 ######################################
-# building variables
+# debug
 ######################################
 # debug build?
 DEBUG = 1
-# optimization
-OPT = -Og
+release: DEBUG=0
 
+# optimization
+ifeq ($(DEBUG), 1)
+OPT = -Og
+endif
 
 #######################################
 # paths
@@ -47,7 +51,8 @@ C_SOURCES_CORE = $(wildcard $(CORE_DIR)/Src/*.c)
 Core/Src/freertos.c \
 Core/Src/stm32f4xx_it.c \
 Core/Src/stm32f4xx_hal_msp.c \
-Core/Src/stm32f4xx_hal_timebase_tim.c
+Core/Src/stm32f4xx_hal_timebase_tim.c \
+Core/Src/printf_stdarg.c
 
 # C sources for Driver
 C_SOURCES_DRIVERS = \
@@ -203,13 +208,14 @@ $(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/FreeRTOS_UDP_IPv4.c \
 $(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/FreeRTOS_UDP_IPv6.c \
 $(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/portable/BufferManagement/BufferAllocation_2.c
 
+C_SOURCES = $(C_SOURCES_CORE) $(C_SOURCES_DRIVERS) $(C_SOURCES_MIDDLEWARES)
+
 # ASM sources
 ASM_SOURCES =  \
 startup_stm32f429xx.s
 
 # ASM sources
 ASMM_SOURCES = 
-
 
 #######################################
 # binaries
@@ -255,6 +261,9 @@ C_DEFS =  \
 -DUSE_HAL_DRIVER \
 -DSTM32F429xx \
 -DSTM32F4xx
+ifeq ($(DEBUG), 1)
+C_DEFS += -DDEBUG
+endif
 
 # AS includes
 AS_INCLUDES =  \
@@ -291,7 +300,7 @@ C_INCLUDES_MIDDLEWARE = \
 #-I$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/portable/NetworkInterface/include \
 -I$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/portable/NetworkInterface/STM32Fxx
 
-#C_INCLUDES = $(C_INCLUDES_CORE) $(C_INCLUDES_DRIVERS) $(C_INCLUDES_MIDDLEWARE)
+C_INCLUDES = $(C_INCLUDES_CORE) $(C_INCLUDES_DRIVERS) $(C_INCLUDES_MIDDLEWARE)
 
 #######################################
 # CFLAGS
@@ -343,13 +352,13 @@ OBJECTS += $(addprefix $(BUILD_DIR)/,$(notdir $(ASMM_SOURCES:.S=.o)))
 vpath %.S $(sort $(dir $(ASMM_SOURCES)))
 
 $(OBJECTS_CORE): $(BUILD_DIR)/%.o: %.c Makefile | $(BUILD_DIR) 
-	$(CC) -c $(CFLAGS) $(C_INCLUDES_CORE) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
+	$(CC) -c $(CFLAGS) $(C_INCLUDES) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
 
 $(OBJECTS_DRIVERS): $(BUILD_DIR)/%.o: %.c Makefile | $(BUILD_DIR) 
-	$(CC) -c $(CFLAGS) $(C_INCLUDES_DRIVERS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
+	$(CC) -c $(CFLAGS) $(C_INCLUDES) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
 
 $(OBJECTS_MIDDLEWARES): $(BUILD_DIR)/%.o: %.c Makefile | $(BUILD_DIR) 
-	$(CC) -c $(CFLAGS) $(C_INCLUDES_MIDDLEWARE) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
+	$(CC) -c $(CFLAGS) $(C_INCLUDES) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
 
 $(BUILD_DIR)/%.o: %.s Makefile | $(BUILD_DIR)
 	$(AS) -c $(CFLAGS) $< -o $@
@@ -369,6 +378,14 @@ $(BUILD_DIR)/%.bin: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
 $(BUILD_DIR):
 	mkdir $@		
 
+
+#######################################
+# install
+#######################################
+install: | $(BUILD_DIR)/$(TARGET).bin
+	./setup flash $(BUILD_DIR)/$(TARGET).bin
+	@echo Target flashed
+
 #######################################
 # clean up
 #######################################
@@ -384,9 +401,12 @@ clean:
 #######################################
 # ctags
 #######################################
-tags: $(BUILD_DIR)/$(TARGET).elf
+ifeq ($(CTAGS), 1)
+tags: | $(BUILD_DIR)/$(TARGET).elf
 	$(CTAGS_PROG) $(CTAGS_OPT) -f ./$(CTAGS_TARGET) .
-
+else
+tags:
+endif
 #######################################
 # .phony
 #######################################

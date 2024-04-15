@@ -64,17 +64,20 @@
 #define configTICK_RATE_HZ                       ((TickType_t)1000)
 #define configMAX_PRIORITIES                     ( 7 )
 #define configMINIMAL_STACK_SIZE                 ((uint16_t)128)
-#define configTOTAL_HEAP_SIZE                    ((size_t)15360)
+#define configTOTAL_HEAP_SIZE                    ((size_t)64*1024) //15360)
 #define configMAX_TASK_NAME_LEN                  ( 16 )
 #define configUSE_16_BIT_TICKS                   0
 #define configUSE_MUTEXES                        1
 #define configQUEUE_REGISTRY_SIZE                8
 #define configUSE_PORT_OPTIMISED_TASK_SELECTION  1
-/* USER CODE BEGIN MESSAGE_BUFFER_LENGTH_TYPE */
+#define configUSE_MALLOC_FAILED_HOOK             1
+#ifdef DEBUG
+#define configCHECK_FOR_STACK_OVERFLOW           1
+#endif
+
 /* Defaults to size_t for backward compatibility, but can be changed
    if lengths will always be less than the number of bytes in a size_t. */
 #define configMESSAGE_BUFFER_LENGTH_TYPE         size_t
-/* USER CODE END MESSAGE_BUFFER_LENGTH_TYPE */
 
 /* Co-routine definitions. */
 #define configUSE_CO_ROUTINES                    0
@@ -146,38 +149,38 @@ tasks.
 http://www.freertos.org/FreeRTOS-Plus/FreeRTOS_Plus_TCP/TCP_Echo_Clients.html
 http://www.freertos.org/FreeRTOS-Plus/FreeRTOS_Plus_TCP/UDP_Echo_Clients.html */
 
-#define configECHO_SERVER_ADDR0	172
-#define configECHO_SERVER_ADDR1 19
-#define configECHO_SERVER_ADDR2 195
-#define configECHO_SERVER_ADDR3 36
+#define configECHO_SERVER_ADDR0	169
+#define configECHO_SERVER_ADDR1 254
+#define configECHO_SERVER_ADDR2 151
+#define configECHO_SERVER_ADDR3 41
 
 /* Default MAC address configuration.  The demo creates a virtual network
 connection that uses this MAC address by accessing the raw Ethernet/WiFi data
 to and from a real network connection on the host PC.  See the
 configNETWORK_INTERFACE_TO_USE definition above for information on how to
 configure the real network connection to use. */
-#define configMAC_ADDR0		0x00
-#define configMAC_ADDR1		0x11
-#define configMAC_ADDR2		0x22
-#define configMAC_ADDR3		0x33
-#define configMAC_ADDR4		0x44
-#define configMAC_ADDR5		0x41
+#define configMAC_ADDR0		0x00 // 0xX2
+#define configMAC_ADDR1		0x80
+#define configMAC_ADDR2		0xe1
+#define configMAC_ADDR3		0x00
+#define configMAC_ADDR4		0x00
+#define configMAC_ADDR5		0x01
 
 /* Default IP address configuration.  Used in ipconfigUSE_DNS is set to 0, or
 ipconfigUSE_DNS is set to 1 but a DNS server cannot be contacted. */
 
-#define configIP_ADDR0		172
-#define configIP_ADDR1		19
-#define configIP_ADDR2		195
-#define configIP_ADDR3		37
+#define configIP_ADDR0		192
+#define configIP_ADDR1		168
+#define configIP_ADDR2		56
+#define configIP_ADDR3		2
 
 /* Default gateway IP address configuration.  Used in ipconfigUSE_DNS is set to
 0, or ipconfigUSE_DNS is set to 1 but a DNS server cannot be contacted. */
 
-#define configGATEWAY_ADDR0	172
-#define configGATEWAY_ADDR1	19
-#define configGATEWAY_ADDR2	192
-#define configGATEWAY_ADDR3	1
+#define configGATEWAY_ADDR0	192
+#define configGATEWAY_ADDR1	168
+#define configGATEWAY_ADDR2	56
+#define configGATEWAY_ADDR3	2
 
 /* Default DNS server configuration.  OpenDNS addresses are 208.67.222.222 and
 208.67.220.220.  Used in ipconfigUSE_DNS is set to 0, or ipconfigUSE_DNS is set
@@ -192,7 +195,7 @@ to 1 but a DNS server cannot be contacted.*/
 ipconfigUSE_DNS is set to 1 but a DNS server cannot be contacted. */
 #define configNET_MASK0		255
 #define configNET_MASK1	  255
-#define configNET_MASK2	  240
+#define configNET_MASK2	  255
 #define configNET_MASK3		0
 
 /* The UDP port to which print messages are sent. */
@@ -201,6 +204,13 @@ ipconfigUSE_DNS is set to 1 but a DNS server cannot be contacted. */
 /* Requirements for TCP Addon */
 #define configUSE_COUNTING_SEMAPHORES 1
 #define INCLUDE_xTaskGetCurrentTaskHandle 1
+
+/* Use custom printf by htiborsch */
+#ifdef DEBUG
+#include "printf_stdarg.h"
+#define configPRINTF( X ) tiny_printf X
+#endif
+
 /* USER CODE END Defines */
 
 #endif /* FREERTOS_CONFIG_H */
