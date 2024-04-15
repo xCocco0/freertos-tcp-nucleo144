@@ -169,18 +169,18 @@ configure the real network connection to use. */
 /* Default IP address configuration.  Used in ipconfigUSE_DNS is set to 0, or
 ipconfigUSE_DNS is set to 1 but a DNS server cannot be contacted. */
 
-#define configIP_ADDR0		192
-#define configIP_ADDR1		168
-#define configIP_ADDR2		56
-#define configIP_ADDR3		2
+#define configIP_ADDR0		169
+#define configIP_ADDR1		254
+#define configIP_ADDR2		151
+#define configIP_ADDR3		42
 
 /* Default gateway IP address configuration.  Used in ipconfigUSE_DNS is set to
 0, or ipconfigUSE_DNS is set to 1 but a DNS server cannot be contacted. */
 
-#define configGATEWAY_ADDR0	192
-#define configGATEWAY_ADDR1	168
-#define configGATEWAY_ADDR2	56
-#define configGATEWAY_ADDR3	2
+#define configGATEWAY_ADDR0	169
+#define configGATEWAY_ADDR1	254
+#define configGATEWAY_ADDR2	151
+#define configGATEWAY_ADDR3	41
 
 /* Default DNS server configuration.  OpenDNS addresses are 208.67.222.222 and
 208.67.220.220.  Used in ipconfigUSE_DNS is set to 0, or ipconfigUSE_DNS is set

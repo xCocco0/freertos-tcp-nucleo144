@@ -122,6 +122,7 @@ int main(void)
 /* USER CODE END Header_StartDefaultTask */
 void StartDefaultTask(void *argument)
 {
+		BaseType_t xRet;
 /* USER CODE BEGIN 5 */
 /* Infinite loop */
 		configPRINTF( ("Running StartDefaultTask function\r\n") );
@@ -145,7 +146,7 @@ void StartDefaultTask(void *argument)
 
 				socklen_t xSize = sizeof(struct freertos_sockaddr);
 				configPRINTF( ("Binding socket...\r\n") );
-				BaseType_t xRet = FreeRTOS_bind(xSock, &xSourceAddress, xSize);
+				xRet = FreeRTOS_bind(xSock, &xSourceAddress, xSize);
 				if(xRet) {
 						configPRINTF( ("Socket could not be bound: error %d\r\n", xRet) );
 						for(;;);
@@ -153,8 +154,8 @@ void StartDefaultTask(void *argument)
 				configPRINTF( ("Done!\r\n") );
 
 				struct freertos_sockaddr xDestinationAddress;
-				//xDestinationAddress.sin_addr = FreeRTOS_inet_addr("169.254.151.41");
-				xDestinationAddress.sin_addr = FreeRTOS_inet_addr("192.168.56.1");
+				xDestinationAddress.sin_addr = FreeRTOS_inet_addr("169.254.151.41");
+				//xDestinationAddress.sin_addr = FreeRTOS_inet_addr("192.168.56.1");
 				//xDestinationAddress.sin_addr = FreeRTOS_inet_addr("255.255.255.255");
 				xDestinationAddress.sin_port = FreeRTOS_htons(10000);
 				xDestinationAddress.sin_family = FREERTOS_AF_INET4;
@@ -164,13 +165,18 @@ void StartDefaultTask(void *argument)
 				for(int i = 0; ; ++i) {
 						sprintf(cMsg, "Hello world n.%d", i);
 						configPRINTF( ("Sending message \"%s\"...", cMsg) );
+						/*
 						if(xIsIPInARPCache(xDestinationAddress.sin_addr))
 							configPRINTF( ("[in cache]") );
 						else
 							configPRINTF( ("[not in cache]") );
+						*/
+						xRet = xARPWaitResolution(xDestinationAddress.sin_addr, portMAX_DELAY);
+						configPRINTF( ("xARPWaitResolution returned %d\r\n", xRet) );
+
 						//FreeRTOS_OutputARPRequest_Multi( &(xEndPoints[0]),
 						//				xDestinationAddress.sin_addr );
-						BaseType_t xRet = FreeRTOS_sendto(xSock, cMsg, configMIN(sizeof(cMsg),strlen(cMsg)), 0,
+						xRet = FreeRTOS_sendto(xSock, cMsg, configMIN(sizeof(cMsg),strlen(cMsg)), 0,
 								&xDestinationAddress, sizeof(xDestinationAddress)
 						);
 						configPRINTF( ("sent %d bytes.\r\n", xRet) );
