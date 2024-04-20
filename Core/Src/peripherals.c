@@ -8,6 +8,8 @@ PCD_HandleTypeDef hpcd_USB_OTG_FS;
 
 RNG_HandleTypeDef hrng;
 
+CRC_HandleTypeDef hcrc;
+
 /**
  * @brief System Clock Configuration
  * @retval None
@@ -172,13 +174,14 @@ void MX_GPIO_Init(void)
 		HAL_GPIO_Init(USER_Btn_GPIO_Port, &GPIO_InitStruct);
 
 		/*Configure GPIO pin : PA0 */
+		/*
 		GPIO_InitStruct.Pin = GPIO_PIN_0;
 		GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
 		GPIO_InitStruct.Pull = GPIO_NOPULL;
 		HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
+		*/
 		/*Configure GPIO pins : LD1_Pin LD3_Pin LD2_Pin */
-		GPIO_InitStruct.Pin = LD1_Pin|LD3_Pin|LD2_Pin;
+		GPIO_InitStruct.Pin = /*LD1_Pin|*/LD3_Pin|LD2_Pin;
 		GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
 		GPIO_InitStruct.Pull = GPIO_NOPULL;
 		GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -241,5 +244,26 @@ void MX_RNG_Init(void)
 		/* USER CODE BEGIN RNG_Init 2 */
 
 		/* USER CODE END RNG_Init 2 */
+
+}
+
+void MX_CRC_Init(void)
+{
+
+  /* USER CODE BEGIN CRC_Init 0 */
+
+  /* USER CODE END CRC_Init 0 */
+
+  /* USER CODE BEGIN CRC_Init 1 */
+
+  /* USER CODE END CRC_Init 1 */
+  hcrc.Instance = CRC;
+  if (HAL_CRC_Init(&hcrc) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN CRC_Init 2 */
+
+  /* USER CODE END CRC_Init 2 */
 
 }

@@ -429,7 +429,7 @@
         void HAL_ETH_IRQHandler( ETH_HandleTypeDef * heth )
         {
             uint32_t dmasr;
-
+			
             dmasr = heth->Instance->DMASR & ETH_DMA_ALL_INTS;
             heth->Instance->DMASR = dmasr;
 

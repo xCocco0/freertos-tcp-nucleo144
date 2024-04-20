@@ -17,9 +17,9 @@
 #define iptraceNETWORK_DOWN() \
 	configPRINTF( ("[Trace] Network connection has been lost\r\n") )
 #define iptraceNETWORK_EVENT_RECEIVED( eEvent ) do { \
+	if( eEvent == eNoEvent) break; \
 	configPRINTF( ("[Trace] Network event received: ") ); \
 	switch(eEvent) { \
-		case eNoEvent: configPRINTF( ("No event") ); break; \
 		case eNetworkDownEvent: configPRINTF( ("The network interface has been lost and/or needs [re]connecting") ); break; \
 		case eNetworkRxEvent: configPRINTF( ("The network interface has queued a received Ethernet frame") ); break; \
 		case eNetworkTxEvent: configPRINTF( ("Let the IP task send a network packet") ); break; \
@@ -34,6 +34,7 @@
 		case eSocketSelectEvent: configPRINTF( ("Send a message to the IP task for select") ); break; \
 		case eSocketSignalEvent: configPRINTF( ("A socket must be signalled") ); break; \
 		case eSocketSetDeleteEvent: configPRINTF( ("A socket must be deleted") ); break; \
+		default: \
 	} \
 	configPRINTF( ("\r\n") ); \
 	} while (0)

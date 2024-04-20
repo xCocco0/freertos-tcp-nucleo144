@@ -34,7 +34,7 @@ const uint8_t ucIPAddress[ ipIP_ADDRESS_LENGTH_BYTES ] = {
 		configIP_ADDR0, configIP_ADDR1, configIP_ADDR2, configIP_ADDR3
 }; 
 const uint8_t ucNetMask[ ipIP_ADDRESS_LENGTH_BYTES ] = {
-		configNET_MASK0, configNET_MASK1, configNET_MASK2,configNET_MASK3
+		configNET_MASK0, configNET_MASK1, configNET_MASK2, configNET_MASK3
 };
 const uint8_t ucGatewayAddress[ ipIP_ADDRESS_LENGTH_BYTES ] = {
 		configGATEWAY_ADDR0, configGATEWAY_ADDR1, configGATEWAY_ADDR2, configGATEWAY_ADDR3
@@ -74,13 +74,14 @@ int main(void)
 		MX_USART3_UART_Init();
 		MX_USB_OTG_FS_PCD_Init();
 		MX_RNG_Init();
+		MX_CRC_Init();
 
 		configPRINTF( ("\n\n\n\r#---------- Starting execution ----------#\r\n") );
 		#if defined(__DATE__) && defined(__TIME__) && defined(DEBUG)
 		configPRINTF( ("# %-38s #\r\n", "Compiled: "__DATE__" "__TIME__) );
 		configPRINTF( ("#----------------------------------------#\r\n") );
 		#endif
-
+		
 		/* Networking configuration-------------------------------------------------*/
 
 		configPRINTF( ("Setting up network interface...\r\n") );	

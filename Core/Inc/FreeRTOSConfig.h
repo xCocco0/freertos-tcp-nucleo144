@@ -149,10 +149,10 @@ tasks.
 http://www.freertos.org/FreeRTOS-Plus/FreeRTOS_Plus_TCP/TCP_Echo_Clients.html
 http://www.freertos.org/FreeRTOS-Plus/FreeRTOS_Plus_TCP/UDP_Echo_Clients.html */
 
-#define configECHO_SERVER_ADDR0	169
-#define configECHO_SERVER_ADDR1 254
-#define configECHO_SERVER_ADDR2 151
-#define configECHO_SERVER_ADDR3 41
+#define configECHO_SERVER_ADDR0	169U
+#define configECHO_SERVER_ADDR1 254U
+#define configECHO_SERVER_ADDR2 151U
+#define configECHO_SERVER_ADDR3 41U
 
 /* Default MAC address configuration.  The demo creates a virtual network
 connection that uses this MAC address by accessing the raw Ethernet/WiFi data
@@ -169,34 +169,34 @@ configure the real network connection to use. */
 /* Default IP address configuration.  Used in ipconfigUSE_DNS is set to 0, or
 ipconfigUSE_DNS is set to 1 but a DNS server cannot be contacted. */
 
-#define configIP_ADDR0		169
-#define configIP_ADDR1		254
-#define configIP_ADDR2		151
-#define configIP_ADDR3		42
+#define configIP_ADDR0		169U
+#define configIP_ADDR1		254U
+#define configIP_ADDR2		151U
+#define configIP_ADDR3		42U
 
 /* Default gateway IP address configuration.  Used in ipconfigUSE_DNS is set to
 0, or ipconfigUSE_DNS is set to 1 but a DNS server cannot be contacted. */
 
-#define configGATEWAY_ADDR0	169
-#define configGATEWAY_ADDR1	254
-#define configGATEWAY_ADDR2	151
-#define configGATEWAY_ADDR3	41
+#define configGATEWAY_ADDR0	169U
+#define configGATEWAY_ADDR1	254U
+#define configGATEWAY_ADDR2	151U
+#define configGATEWAY_ADDR3	41U
 
 /* Default DNS server configuration.  OpenDNS addresses are 208.67.222.222 and
 208.67.220.220.  Used in ipconfigUSE_DNS is set to 0, or ipconfigUSE_DNS is set
 to 1 but a DNS server cannot be contacted.*/
 
-#define configDNS_SERVER_ADDR0	10
-#define configDNS_SERVER_ADDR1  4
-#define configDNS_SERVER_ADDR2	4
-#define configDNS_SERVER_ADDR3	10
+#define configDNS_SERVER_ADDR0	configGATEWAY_ADDR0
+#define configDNS_SERVER_ADDR1  configGATEWAY_ADDR1
+#define configDNS_SERVER_ADDR2  configGATEWAY_ADDR2
+#define configDNS_SERVER_ADDR3	configGATEWAY_ADDR3
 
 /* Default netmask configuration.  Used in ipconfigUSE_DNS is set to 0, or
 ipconfigUSE_DNS is set to 1 but a DNS server cannot be contacted. */
-#define configNET_MASK0		255
-#define configNET_MASK1	  255
-#define configNET_MASK2	  255
-#define configNET_MASK3		0
+#define configNET_MASK0  	255U
+#define configNET_MASK1	  255U
+#define configNET_MASK2	    0U
+#define configNET_MASK3		0U
 
 /* The UDP port to which print messages are sent. */
 #define configPRINT_PORT	( 15000 )

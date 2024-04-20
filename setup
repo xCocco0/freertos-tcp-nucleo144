@@ -24,7 +24,7 @@ case $1 in
 	"flash")
 		[ $2 ] && TARGET=$2
 		echo Writing $TARGET to board
-		st-flash write $TARGET 0x8000000 2> /dev/null
+		st-flash --reset write $TARGET 0x8000000 2> /dev/null
 		if [ $? -eq 0 ]; then
 			echo Flashed successfully
 		else

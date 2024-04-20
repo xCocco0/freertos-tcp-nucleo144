@@ -21,6 +21,7 @@ void vApplicationIPNetworkEventHook( eIPCallbackEvent_t eNetworkEvent )
 		/* If the network has just come up...*/
 		if( eNetworkEvent == eNetworkUp )
 		{
+				configPRINTF( ("Network up event hook has been called\r\n") );
 				/* Create the tasks that use the IP stack if they have not already been
 				   created. */
 				if( xTasksAlreadyCreated == pdFALSE )
@@ -32,20 +33,18 @@ void vApplicationIPNetworkEventHook( eIPCallbackEvent_t eNetworkEvent )
 						xTasksAlreadyCreated = pdTRUE;
 				}
 
-				/*
-				   FreeRTOS_GetAddressConfiguration( &ulIPAddress, &ulNetMask, &ulGatewayAddress, &ulDNSServerAddress );
-				   FreeRTOS_inet_ntoa( ulIPAddress, cBuffer );
-				   FreeRTOS_printf( ( "\r\n\r\nIP Address: %s\r\n", cBuffer ) );
+				FreeRTOS_GetAddressConfiguration( &ulIPAddress, &ulNetMask, &ulGatewayAddress, &ulDNSServerAddress );
+				FreeRTOS_inet_ntoa( ulIPAddress, cBuffer );
+				configPRINTF( ( "IP Address: %s\r\n", cBuffer ) );
 
-				   FreeRTOS_inet_ntoa( ulNetMask, cBuffer );
-				   FreeRTOS_printf( ( "Subnet Mask: %s\r\n", cBuffer ) );
+				FreeRTOS_inet_ntoa( ulNetMask, cBuffer );
+				configPRINTF( ( "Subnet Mask: %s\r\n", cBuffer ) );
 
-				   FreeRTOS_inet_ntoa( ulGatewayAddress, cBuffer );
-				   FreeRTOS_printf( ( "Gateway Address: %s\r\n", cBuffer ) );
+				FreeRTOS_inet_ntoa( ulGatewayAddress, cBuffer );
+				configPRINTF( ( "Gateway Address: %s\r\n", cBuffer ) );
 
-				   FreeRTOS_inet_ntoa( ulDNSServerAddress, cBuffer );
-				   FreeRTOS_printf( ( "DNS Server Address: %s\r\n\r\n\r\n", cBuffer ) );
-				   */
+				FreeRTOS_inet_ntoa( ulDNSServerAddress, cBuffer );
+				configPRINTF( ( "DNS Server Address: %s\r\n", cBuffer ) );
 		}
 }
 

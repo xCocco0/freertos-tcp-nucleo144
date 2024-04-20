@@ -12,6 +12,8 @@
 
 #define ipconfigUSE_RMII ipconfigENABLE
 
+#define ipconfigREPLY_TO_INCOMING_PINGS ipconfigENABLE
+
 #ifdef DEBUG
 #define ipconfigHAS_DEBUG_PRINTF ipconfigENABLE
 #include "IPTraceMacro.h"
