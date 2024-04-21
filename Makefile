@@ -43,6 +43,19 @@ MIDDLEWARES_DIR = Middlewares
 DRIVERS_DIR = Drivers
 
 ######################################
+# verbose
+######################################
+ifndef ($(VERBOSE))
+VERBOSE=0
+endif
+
+ifeq ($(VERBOSE),0)
+define summary
+	@echo "$(1)"
+endef
+endif
+
+######################################
 # source
 ######################################
 # C sources for Core (automatically selected)
@@ -351,32 +364,45 @@ vpath %.s $(sort $(dir $(ASM_SOURCES)))
 OBJECTS += $(addprefix $(BUILD_DIR)/,$(notdir $(ASMM_SOURCES:.S=.o)))
 vpath %.S $(sort $(dir $(ASMM_SOURCES)))
 
+ifeq ($(VERBOSE),0)
+.SILENT: $(OBJECTS) $(addprefix $(BUILD_DIR)/$(TARGET),.elf .bin .hex)
+endif
+
 $(OBJECTS_CORE): $(BUILD_DIR)/%.o: %.c Makefile | $(BUILD_DIR) 
 	$(CC) -c $(CFLAGS) $(C_INCLUDES) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
+	$(call summary,"[Core] [CC] $@")
 
 $(OBJECTS_DRIVERS): $(BUILD_DIR)/%.o: %.c Makefile | $(BUILD_DIR) 
 	$(CC) -c $(CFLAGS) $(C_INCLUDES) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
+	$(call summary,"[Drivers] [CC] $@")
 
 $(OBJECTS_MIDDLEWARES): $(BUILD_DIR)/%.o: %.c Makefile | $(BUILD_DIR) 
 	$(CC) -c $(CFLAGS) $(C_INCLUDES) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
+	$(call summary,"[Middlewares] [CC] $@")
 
 $(BUILD_DIR)/%.o: %.s Makefile | $(BUILD_DIR)
 	$(AS) -c $(CFLAGS) $< -o $@
+	$(call summary,"[AS] $@")
+
 $(BUILD_DIR)/%.o: %.S Makefile | $(BUILD_DIR)
 	$(AS) -c $(CFLAGS) $< -o $@
+	$(call summary,"[AS] $@")
 
 $(BUILD_DIR)/$(TARGET).elf: $(OBJECTS) Makefile
 	$(CC) $(OBJECTS) $(LDFLAGS) -o $@
+	$(call summary,"[CC] $@")
 	$(SZ) $@
 
 $(BUILD_DIR)/%.hex: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
 	$(HEX) $< $@
+	$(call summary,"[HEX] \t\t\t $@")
 	
 $(BUILD_DIR)/%.bin: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
 	$(BIN) $< $@	
+	$(call summary,"[BIN] \t\t\t $@")
 	
 $(BUILD_DIR):
-	mkdir $@		
+	@mkdir $@		
 
 
 #######################################
@@ -407,6 +433,7 @@ tags: | $(BUILD_DIR)/$(TARGET).elf
 else
 tags:
 endif
+
 #######################################
 # .phony
 #######################################
