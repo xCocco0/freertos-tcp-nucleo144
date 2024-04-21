@@ -2,6 +2,8 @@
 #ifndef IP_TRACE_MACRO_H
 #define IP_TRACE_MACRO_H
 
+#if 1
+
 #ifdef DEBUG
 
 #define iptraceFAILED_TO_OBTAIN_NETWORK_BUFFER() \
@@ -95,7 +97,7 @@
 #define iptraceARP_TABLE_ENTRY_WILL_EXPIRE( ulIPAddress ) \
 	do {\
 		char pucBuffer[16]; \
-		FreeRTOS_inet_ntoa( ulIPAddress, pucBuffer );; \
+		FreeRTOS_inet_ntoa( ulIPAddress, pucBuffer ); \
 		configPRINTF( ("[Trace] ARP Table entry will expire for %s\r\n", pucBuffer) );\
 	} while(0)
 #define iptraceCREATING_ARP_REQUEST( ulIPAddress ) \
@@ -155,4 +157,7 @@
 
 #endif /* DEBUG */
 
+#endif
+
 #endif /* IP_TRACE_MACRO_H */
+

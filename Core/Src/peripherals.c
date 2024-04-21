@@ -174,6 +174,7 @@ void MX_GPIO_Init(void)
 		HAL_GPIO_Init(USER_Btn_GPIO_Port, &GPIO_InitStruct);
 
 		/*Configure GPIO pin : PA0 */
+
 		/*
 		GPIO_InitStruct.Pin = GPIO_PIN_0;
 		GPIO_InitStruct.Mode = GPIO_MODE_INPUT;

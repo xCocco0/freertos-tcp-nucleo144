@@ -65,8 +65,9 @@ BaseType_t xApplicationGetRandomNumber( uint32_t *pulValue )
 		HAL_StatusTypeDef xResult;
 		BaseType_t xReturn;
 		uint32_t ulValue;
-
+		
 		xResult = HAL_RNG_GenerateRandomNumber( &hrng, &ulValue );
+
 		if( xResult == HAL_OK )
 		{
 				xReturn = pdPASS;
