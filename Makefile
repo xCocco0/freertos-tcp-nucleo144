@@ -395,11 +395,11 @@ $(BUILD_DIR)/$(TARGET).elf: $(OBJECTS) Makefile
 
 $(BUILD_DIR)/%.hex: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
 	$(HEX) $< $@
-	$(call summary,"[HEX] \t\t\t $@")
+	$(call summary,"[HEX] $@")
 	
 $(BUILD_DIR)/%.bin: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
 	$(BIN) $< $@	
-	$(call summary,"[BIN] \t\t\t $@")
+	$(call summary,"[BIN] $@")
 	
 $(BUILD_DIR):
 	@mkdir $@		

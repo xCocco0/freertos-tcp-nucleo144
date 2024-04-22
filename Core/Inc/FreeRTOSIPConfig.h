@@ -27,9 +27,11 @@
 #define ipconfigUSE_TCP_WIN ipconfigENABLE
 
 #ifdef DEBUG
-#define ipconfigHAS_DEBUG_PRINTF ipconfigENABLE
-#define FreeRTOS_debug_printf( MSG )    do { configPRINTF( MSG ); configPRINTF( ("\r") ); } while( ipFALSE_BOOL )
-#include "IPTraceMacro.h"
+		#define ipconfigHAS_DEBUG_PRINTF ipconfigENABLE
+		//#define FreeRTOS_debug_printf( MSG )    do { configPRINTF( MSG ); configPRINTF( ("\r") ); } while( ipFALSE_BOOL )
+		#define FreeRTOS_debug_printf( MSG )    vLoggerPrintline MSG
+
+		#include "IPTraceMacro.h"
 #endif
 
 #endif /* FREERTOS_IP_CONFIG_H */

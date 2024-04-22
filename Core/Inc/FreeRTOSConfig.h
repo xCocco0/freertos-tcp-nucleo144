@@ -205,10 +205,11 @@ ipconfigUSE_DNS is set to 1 but a DNS server cannot be contacted. */
 #define configUSE_COUNTING_SEMAPHORES 1
 #define INCLUDE_xTaskGetCurrentTaskHandle 1
 
-/* Use custom printf by htiborsch */
 #ifdef DEBUG
-#include "printf_stdarg.h"
-#define configPRINTF( X ) tiny_printf X
+//#include "printf_stdarg.h"
+//#define configPRINTF( X ) tiny_printf X
+#include "logger.h"
+#define configPRINTF( X ) vLoggerPrint X
 #endif
 
 /* USER CODE END Defines */

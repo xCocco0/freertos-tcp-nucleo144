@@ -7,10 +7,9 @@
 #include "FreeRTOS_Sockets.h"
 #include "peripherals.h"
 
-#include "FreeRTOS_ARP.h" //TODO remove
-
 #ifdef DEBUG
-#include "printf_stdarg.h"
+//#include "printf_stdarg.h"
+#include "logger.h"
 #endif
 
 /* Private typedef -----------------------------------------------------------*/
@@ -82,6 +81,8 @@ int main(void)
 		configPRINTF( ("#----------------------------------------#\r\n") );
 		#endif
 
+		BaseType_t xRet = xTaskCreate(StartDefaultTask, "Def", 4*1024, NULL, tskIDLE_PRIORITY+1, NULL);
+		vTaskStartScheduler();
 
 		/* Networking configuration-------------------------------------------------*/
 
@@ -107,27 +108,31 @@ int main(void)
 		/* Start scheduler */
 		//osKernelStart();
 		
-		BaseType_t xRet = xTaskCreate(StartDefaultTask, "Def", 4*1024, NULL, tskIDLE_PRIORITY+1, NULL);
-		vTaskStartScheduler();
 		/* Infinite loop */
 
 		configPRINTF( ("Warning! Scheduler returned\r\n") );
 		for(;;);
 }
 
-/* USER CODE BEGIN Header_StartDefaultTask */
 /**
  * @brief  Function implementing the defaultTask thread.
  * @param  argument: Not used
  * @retval None
  */
-/* USER CODE END Header_StartDefaultTask */
 void StartDefaultTask(void *argument)
 {
 
+		vLoggerInit();
+
+		for(int i = 0; i < 5; ++i) {
+				configPRINTF( ("sending hello world...\r\n") );
+				vLoggerPrintline("%0130d");
+				vTaskDelay(pdMS_TO_TICKS(1000));
+		}
+		for(;;);
+
 		BaseType_t xRet;
-/* USER CODE BEGIN 5 */
-/* Infinite loop */
+
 		configPRINTF( ("Running StartDefaultTask function\r\n") );
 		for(;;) {
 				
