@@ -38,4 +38,13 @@ int sprintf( char * apBuf,
              const char * apFmt,
              ... );
 
+int vsprintf( char * apBuf,
+              const char * apFmt,
+              va_list args );
+
+int vsnprintf( char * apBuf,
+               size_t aMaxLen,
+               const char * apFmt,
+               va_list args );
+
 #endif /*PRINTF_STDARG_H*/

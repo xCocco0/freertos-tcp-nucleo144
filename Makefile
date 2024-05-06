@@ -25,8 +25,12 @@ CTAGS_TARGET = tags
 # debug
 ######################################
 # debug build?
-DEBUG = 1
-release: DEBUG=0
+
+ifneq ($(DEBUG), 1)
+ifneq ($(DEBUG), 0)
+DEBUG=1
+endif
+endif
 
 # optimization
 ifeq ($(DEBUG), 1)
@@ -345,7 +349,6 @@ LDFLAGS = $(MCU) -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BU
 # default action: build all
 all: $(BUILD_DIR)/$(TARGET).elf $(BUILD_DIR)/$(TARGET).hex $(BUILD_DIR)/$(TARGET).bin tags
 	@echo Build target compiled successfully
-
 
 #######################################
 # build the application

@@ -4,15 +4,15 @@
 #include "FreeRTOS.h"
 #include "semphr.h"
 
-#include <stdio.h>
-#include <stdarg.h>
 #include <string.h>
+#include <stdarg.h>
+#include "printf_stdarg.h"
 
-#define LOGGER_BUF_LEN 128U
+#define LOGGER_BUF_LEN 512U
 #define LOGGER_TASK_PRIORITY tskIDLE_PRIORITY+1
-#define LOGGER_STACK_SIZE LOGGER_BUF_LEN + 64
+#define LOGGER_STACK_SIZE 64
 
-#define PRINTER_TICKS_TO_WAIT (TickType_t) 1U
+#define PRINTER_TICKS_TO_WAIT (TickType_t) 0U
 
 static struct {
 
@@ -43,6 +43,10 @@ void prvLoggerTask(void * const pvParameters);
 /**** public functions ****/
 
 void vLoggerInit(void) {
+		xLoggerData.xLock = xSemaphoreCreateMutexStatic(&xLoggerSemaphoreBuffer);
+		xLoggerData.usWriteIndex = 0;
+		xLoggerData.usReadIndex = 0;
+
 		xLoggerTaskHandle = xTaskCreateStatic(prvLoggerTask,
 						"Logger task",
 						LOGGER_STACK_SIZE,
@@ -51,10 +55,6 @@ void vLoggerInit(void) {
 						xLoggerStack,
 						&xLoggerTCB
 						);
-		xLoggerData.xLock = xSemaphoreCreateMutexStatic(&xLoggerSemaphoreBuffer);
-		xLoggerData.usWriteIndex = 0;
-		xLoggerData.usReadIndex = 0;
-
 }
 
 void vLoggerPrint(const char *format, ...)
@@ -63,7 +63,7 @@ void vLoggerPrint(const char *format, ...)
 		uint16_t usRequiredLen, sMaxLen;
 
 		va_start( args, format );
-
+		
 		if( xSemaphoreTake( xLoggerData.xLock, PRINTER_TICKS_TO_WAIT ) != pdFALSE) {
 
 				sMaxLen = xLoggerData.usReadIndex - xLoggerData.usWriteIndex;
@@ -74,6 +74,7 @@ void vLoggerPrint(const char *format, ...)
 								LOGGER_BUF_LEN,
 								format,
 								args );
+
 				usRequiredLen = configMIN( usRequiredLen, sMaxLen );
 
 				( void ) prvUpdateFromCopyBuffer(usRequiredLen);
@@ -102,6 +103,7 @@ void vLoggerPrintline(const char *format, ...)
 								LOGGER_BUF_LEN,
 								format,
 								args );
+
 				usRequiredLen = configMIN( usRequiredLen, sMaxLen-2);
 
 				char cChar;
@@ -119,7 +121,7 @@ void vLoggerPrintline(const char *format, ...)
 				usRequiredLen += 2;
 
 				(void) prvUpdateFromCopyBuffer(usRequiredLen);
-			
+	
 				xTaskNotifyGive( xLoggerTaskHandle );
 				xSemaphoreGive( xLoggerData.xLock );
 		}
@@ -127,6 +129,59 @@ void vLoggerPrintline(const char *format, ...)
 		va_end( args );
 }
 
+#define LOGGER_FAST_LOG_SIZE 300
+void _vLoggerPrintlineFast(const char *format, ...)
+{
+		for(int i = 0; i < 1800*10; ++i) {
+			asm("": "=r" (format) : "r" (format));
+		}
+}
+
+void vLoggerPrintlineFast(const char *format, ...)
+{
+
+		va_list args;
+		uint16_t usRequiredLen, sMaxLen;
+
+		va_start( args, format );
+
+		if( /*xSemaphoreTake( xLoggerData.xLock, (TickType_t) 0 ) != pdFALSE*/ 1) {
+
+				sMaxLen = xLoggerData.usReadIndex - xLoggerData.usWriteIndex;
+				if( sMaxLen <= 0 ) sMaxLen += LOGGER_BUF_LEN;
+				if( sMaxLen > LOGGER_FAST_LOG_SIZE)
+					sMaxLen = LOGGER_FAST_LOG_SIZE;
+
+				usRequiredLen = 999; /* vsnprintf(
+								xLoggerData.pcCopyBuffer,
+								LOGGER_FAST_LOG_SIZE,
+								format,
+								args );*/
+
+				usRequiredLen = configMIN( usRequiredLen, sMaxLen-2);
+
+				char cChar;
+			
+				while( usRequiredLen > 0 ) {
+						cChar = xLoggerData.pcCopyBuffer[usRequiredLen-1];
+						if( cChar == '\r' || cChar == '\n' )
+								usRequiredLen -= 1;
+						else
+								break;
+				}
+
+				xLoggerData.pcCopyBuffer[usRequiredLen] = '\r';
+				xLoggerData.pcCopyBuffer[usRequiredLen+1] = '\n';
+				usRequiredLen += 2;
+
+				(void) prvUpdateFromCopyBuffer(usRequiredLen);
+	
+				xTaskNotifyGive( xLoggerTaskHandle );
+				//xSemaphoreGive( xLoggerData.xLock );
+		}
+
+		va_end( args );
+}
 /**** private functions ****/
 
 void prvUpdateFromCopyBuffer(uint16_t usRequiredLen)
@@ -171,7 +226,6 @@ void prvLoggerTask(void * const pvParameters)
 		uint16_t usDistanceToEndBuffer;
 
 		for(;;) {
-				configPRINTF( ("waiting for event\r\n") );
 				// wait for buffer
 
 				ulTaskNotifyTake( pdTRUE, portMAX_DELAY );

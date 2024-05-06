@@ -29,7 +29,7 @@
 #ifdef DEBUG
 		#define ipconfigHAS_DEBUG_PRINTF ipconfigENABLE
 		//#define FreeRTOS_debug_printf( MSG )    do { configPRINTF( MSG ); configPRINTF( ("\r") ); } while( ipFALSE_BOOL )
-		#define FreeRTOS_debug_printf( MSG )    vLoggerPrintline MSG
+		#define FreeRTOS_debug_printf( MSG )    vLoggerPrintlineFast MSG
 
 		#include "IPTraceMacro.h"
 #endif

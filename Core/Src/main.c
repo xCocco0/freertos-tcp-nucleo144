@@ -10,6 +10,8 @@
 #ifdef DEBUG
 //#include "printf_stdarg.h"
 #include "logger.h"
+#else
+#define vLoggerInit()
 #endif
 
 /* Private typedef -----------------------------------------------------------*/
@@ -46,11 +48,19 @@ const uint8_t ucMACAddress[ ipMAC_ADDRESS_LENGTH_BYTES ] = {
 		configMAC_ADDR3, configMAC_ADDR4, configMAC_ADDR5
 };
 
+#define mainIPv6_ADRR            "fe80::dead:beef"
+#define mainIPv6_PREFIX          "fe80::"
+#define mainIPv6_DNS_SERVER_ADDR "2001:4860:4860::8888"        /* Google DNS */
+#define mainIPv6_GATEWAY_ADDR    "fe80::4535:c3a4:9457:6e5a"
+
 NetworkInterface_t xInterfaces[1];
 NetworkEndPoint_t xEndPoints[1];
 
 /* Private function prototypes -----------------------------------------------*/
-void StartDefaultTask(void *argument);
+
+extern void vTaskUDPSendIPv4(void *argument);
+extern void vTaskUDPSendIPv6(void *argument);
+extern void vTaskTCPSendIPv4(void *argument);
 
 /**
  * @brief  The application entry point.
@@ -58,7 +68,6 @@ void StartDefaultTask(void *argument);
  */
 int main(void)
 {
-
 		/* MCU Configuration--------------------------------------------------------*/
 
 		/* Reset of all peripherals, Initializes the Flash interface and the Systick. */
@@ -75,14 +84,13 @@ int main(void)
 		MX_RNG_Init();
 		MX_CRC_Init();
 
+		vLoggerInit();
+
 		configPRINTF( ("\n\n\n\r#---------- Starting execution ----------#\r\n") );
 		#if defined(__DATE__) && defined(__TIME__) && defined(DEBUG)
 		configPRINTF( ("# %-38s #\r\n", "Compiled: "__DATE__" "__TIME__) );
 		configPRINTF( ("#----------------------------------------#\r\n") );
 		#endif
-
-		BaseType_t xRet = xTaskCreate(StartDefaultTask, "Def", 4*1024, NULL, tskIDLE_PRIORITY+1, NULL);
-		vTaskStartScheduler();
 
 		/* Networking configuration-------------------------------------------------*/
 
@@ -91,6 +99,22 @@ int main(void)
 		FreeRTOS_FillEndPoint(
 						&(xInterfaces[0]), &(xEndPoints[0]), ucIPAddress,
 						ucNetMask, ucGatewayAddress, ucDNSServerAddress, ucMACAddress);
+		
+		IPv6_Address_t xIPAddress, xPrefix, xGateWay, xDNSServer;
+
+		FreeRTOS_inet_pton6( mainIPv6_PREFIX, xPrefix.ucBytes );
+		FreeRTOS_inet_pton6( mainIPv6_DNS_SERVER_ADDR, xDNSServer.ucBytes );
+		FreeRTOS_inet_pton6( mainIPv6_ADRR, xIPAddress.ucBytes );
+		FreeRTOS_inet_pton6( mainIPv6_GATEWAY_ADDR, xGateWay.ucBytes );
+/*
+		FreeRTOS_FillEndPoint_IPv6( &( xInterfaces[ 0 ] ),
+						&( xEndPoints[ 1 ] ),
+						&( xIPAddress ),
+						&( xPrefix ),
+						64,            // Prefix length.
+						&( xGateWay ),
+						&( xDNSServer ), // pxDNSServerAddress: Not used yet.
+						ucMACAddress );*/
 
 		configPRINTF( ("Done!\r\n") );
 
@@ -107,98 +131,23 @@ int main(void)
 
 		/* Start scheduler */
 		//osKernelStart();
-		
+		//
+		BaseType_t xRet;
+		//xRet = xTaskCreate(vTaskUDPSendIPv4, "Def", 1024, NULL, tskIDLE_PRIORITY+1, NULL);
+		//xRet = xTaskCreate(vTaskUDPSendIPv6, "Def", 1024, NULL, tskIDLE_PRIORITY+1, NULL);
+		xRet = xTaskCreate(vTaskTCPSendIPv4, "Def", 256, NULL, tskIDLE_PRIORITY+1, NULL);
+		vTaskStartScheduler();
+
 		/* Infinite loop */
 
 		configPRINTF( ("Warning! Scheduler returned\r\n") );
 		for(;;);
 }
 
-/**
- * @brief  Function implementing the defaultTask thread.
- * @param  argument: Not used
- * @retval None
- */
-void StartDefaultTask(void *argument)
-{
-
-		vLoggerInit();
-
-		for(int i = 0; i < 5; ++i) {
-				configPRINTF( ("sending hello world...\r\n") );
-				vLoggerPrintline("%0130d");
-				vTaskDelay(pdMS_TO_TICKS(1000));
-		}
-		for(;;);
-
-		BaseType_t xRet;
-
-		configPRINTF( ("Running StartDefaultTask function\r\n") );
-		for(;;) {
-				
-				configPRINTF( ("Creating socket...\r\n") );
-				Socket_t xSock = FreeRTOS_socket(FREERTOS_AF_INET4,
-								FREERTOS_SOCK_STREAM, 
-								FREERTOS_IPPROTO_TCP);
-				if(xSock == FREERTOS_INVALID_SOCKET) {
-						HAL_GPIO_TogglePin(GPIOB, LD2_Pin);
-						configPRINTF( ("Socket error\r\n") );
-						for(;;);
-				}
-				configPRINTF( ("Done!\r\n") );
-				
-				struct freertos_sockaddr xSourceAddress;
-				xSourceAddress.sin_addr = FreeRTOS_inet_addr_quick( ucIPAddress[ 0 ], ucIPAddress[ 1 ], ucIPAddress[ 2 ], ucIPAddress[ 3 ] );
-				xSourceAddress.sin_port = FreeRTOS_htons(10000);
-				xSourceAddress.sin_family = FREERTOS_AF_INET4;
-
-				socklen_t xSize = sizeof(struct freertos_sockaddr);
-				configPRINTF( ("Binding socket...\r\n") );
-				xRet = FreeRTOS_bind(xSock, &xSourceAddress, xSize);
-				if(xRet) {
-						configPRINTF( ("Socket could not be bound: error %d\r\n", xRet) );
-						for(;;);
-				}
-				configPRINTF( ("Done!\r\n") );
-				
-				struct freertos_sockaddr xDestinationAddress;
-				xDestinationAddress.sin_addr = FreeRTOS_inet_addr("169.254.151.41");
-				//xDestinationAddress.sin_addr = FreeRTOS_inet_addr("192.168.56.1");
-				//xDestinationAddress.sin_addr = FreeRTOS_inet_addr("255.255.255.255");
-				xDestinationAddress.sin_port = FreeRTOS_htons(10000);
-				xDestinationAddress.sin_family = FREERTOS_AF_INET4;
-
-				configPRINTF( ("Connecting socket...\r\n") );
-				xRet = FreeRTOS_connect(xSock, &xDestinationAddress, xSize);
-				if(xRet) {
-						configPRINTF( ("Socket could not be connected: error %d\r\n", xRet) );
-						for(;;);
-				}
-				configPRINTF( ("Done!\r\n") );
-
-				char cMsg[32];
-
-				for(int i = 0; ; ++i) {
-						sprintf(cMsg, "Hello world n.%d", i);
-						configPRINTF( ("Sending message \"%s\"...", cMsg) );
-						
-						/*
-						xRet = FreeRTOS_sendto(xSock, cMsg, configMIN(sizeof(cMsg), strlen(cMsg)), 0,
-								&xDestinationAddress, sizeof(xDestinationAddress)
-						);
-						*/
-						xRet = FreeRTOS_send(xSock, cMsg, configMIN(sizeof(cMsg), strlen(cMsg)), 0);
-						configPRINTF( ("sent %d bytes.\r\n", xRet) );
-						configASSERT(xRet >= 0);
-						HAL_GPIO_TogglePin(GPIOB, LD3_Pin);
-						osDelay(1000UL);
-						//vTaskDelay(1000UL / portTICK_PERIOD_MS);
-				}
-		}
-}
-
+/*
+// required by printf_stdarg
 void vOutputChar( const char cChar, const TickType_t xTicksToWait )
 {
 		HAL_UART_Transmit(&huart3, (uint8_t *)&cChar, 1, (uint32_t) xTicksToWait);
 }
-
+*/
