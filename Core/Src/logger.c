@@ -10,7 +10,7 @@
 
 #define LOGGER_BUF_LEN 512U
 #define LOGGER_TASK_PRIORITY tskIDLE_PRIORITY+1
-#define LOGGER_STACK_SIZE 64
+#define LOGGER_STACK_SIZE LOGGER_BUF_LEN/4 + 16
 
 #define PRINTER_TICKS_TO_WAIT (TickType_t) 0U
 
@@ -19,9 +19,11 @@ static struct {
 		SemaphoreHandle_t xLock;
 		char pcBuffer[LOGGER_BUF_LEN];
 		char pcCopyBuffer[LOGGER_BUF_LEN];
-		uint16_t usWriteIndex;
 
+		uint16_t usWriteIndex;
 		uint16_t usReadIndex;
+
+		uint8_t ucTimedOut;
 
 } xLoggerData;
 
@@ -81,6 +83,8 @@ void vLoggerPrint(const char *format, ...)
 			
 				xTaskNotifyGive( xLoggerTaskHandle );
 				xSemaphoreGive( xLoggerData.xLock );
+		} else {
+			xLoggerData.ucTimedOut = 1;
 		}
 
 		va_end( args );
@@ -129,59 +133,6 @@ void vLoggerPrintline(const char *format, ...)
 		va_end( args );
 }
 
-#define LOGGER_FAST_LOG_SIZE 300
-void _vLoggerPrintlineFast(const char *format, ...)
-{
-		for(int i = 0; i < 1800*10; ++i) {
-			asm("": "=r" (format) : "r" (format));
-		}
-}
-
-void vLoggerPrintlineFast(const char *format, ...)
-{
-
-		va_list args;
-		uint16_t usRequiredLen, sMaxLen;
-
-		va_start( args, format );
-
-		if( /*xSemaphoreTake( xLoggerData.xLock, (TickType_t) 0 ) != pdFALSE*/ 1) {
-
-				sMaxLen = xLoggerData.usReadIndex - xLoggerData.usWriteIndex;
-				if( sMaxLen <= 0 ) sMaxLen += LOGGER_BUF_LEN;
-				if( sMaxLen > LOGGER_FAST_LOG_SIZE)
-					sMaxLen = LOGGER_FAST_LOG_SIZE;
-
-				usRequiredLen = 999; /* vsnprintf(
-								xLoggerData.pcCopyBuffer,
-								LOGGER_FAST_LOG_SIZE,
-								format,
-								args );*/
-
-				usRequiredLen = configMIN( usRequiredLen, sMaxLen-2);
-
-				char cChar;
-			
-				while( usRequiredLen > 0 ) {
-						cChar = xLoggerData.pcCopyBuffer[usRequiredLen-1];
-						if( cChar == '\r' || cChar == '\n' )
-								usRequiredLen -= 1;
-						else
-								break;
-				}
-
-				xLoggerData.pcCopyBuffer[usRequiredLen] = '\r';
-				xLoggerData.pcCopyBuffer[usRequiredLen+1] = '\n';
-				usRequiredLen += 2;
-
-				(void) prvUpdateFromCopyBuffer(usRequiredLen);
-	
-				xTaskNotifyGive( xLoggerTaskHandle );
-				//xSemaphoreGive( xLoggerData.xLock );
-		}
-
-		va_end( args );
-}
 /**** private functions ****/
 
 void prvUpdateFromCopyBuffer(uint16_t usRequiredLen)
@@ -220,6 +171,8 @@ void prvPutString(char * const pcStr, uint32_t usLen)
 
 }
 
+#define TIMEOUT_STRING "[Warning] Detected timeout in debug output\r\n"
+
 void prvLoggerTask(void * const pvParameters)
 {
 		int16_t sBytesToRead;
@@ -230,6 +183,11 @@ void prvLoggerTask(void * const pvParameters)
 
 				ulTaskNotifyTake( pdTRUE, portMAX_DELAY );
 				
+				if( xLoggerData.ucTimedOut != 0 ) {
+					prvPutString( TIMEOUT_STRING, sizeof( TIMEOUT_STRING ) );
+					xLoggerData.ucTimedOut = 0;
+				}
+
 				sBytesToRead = xLoggerData.usWriteIndex - xLoggerData.usReadIndex;
 				usDistanceToEndBuffer = LOGGER_BUF_LEN - xLoggerData.usReadIndex;
 

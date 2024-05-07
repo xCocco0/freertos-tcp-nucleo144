@@ -19,7 +19,11 @@
 #define SRC_ADDR_6 "fe80::dead:beef"
 #define SRC_PORT 10000
 
-/* SRC ADDR in FreeRTOSConfig.h */
+
+void vTaskUDPSendIPv4(void *argument);
+void vTaskUDPSendIPv6(void *argument);
+void vTaskTCPSendIPv4(void *argument);
+void vTaskTCPSendIPv6(void *argument);
 
 /**
  * @brief  Periodically send UDP packet using IPv4
@@ -57,7 +61,7 @@ void vTaskUDPSendIPv4(void *argument)
 		struct freertos_sockaddr xDestinationAddress;
 		xDestinationAddress.sin_addr = FreeRTOS_inet_addr(DST_ADDR_4);
 		xDestinationAddress.sin_port = FreeRTOS_htons(DST_PORT);
-		//xDestinationAddress.sin_family = FREERTOS_AFxy_INET(4,3);
+		xDestinationAddress.sin_family = FREERTOS_AFxy_INET(4,3);
 
 		char cMsg[32];
 
@@ -166,7 +170,7 @@ void vTaskTCPSendIPv4(void *argument)
 
 		socklen_t xSize = sizeof(struct freertos_sockaddr);
 		configPRINTF( ("Binding socket...\r\n") );
-		xRet = FreeRTOS_bind(xSock, NULL, xSize);
+		xRet = FreeRTOS_bind(xSock, &xSourceAddress, xSize);
 		if(xRet) {
 			configPRINTF( ("Socket could not be bound: error %d\r\n", xRet) );
 			for(;;);

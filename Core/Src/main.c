@@ -54,7 +54,7 @@ const uint8_t ucMACAddress[ ipMAC_ADDRESS_LENGTH_BYTES ] = {
 #define mainIPv6_GATEWAY_ADDR    "fe80::4535:c3a4:9457:6e5a"
 
 NetworkInterface_t xInterfaces[1];
-NetworkEndPoint_t xEndPoints[1];
+NetworkEndPoint_t xEndPoints[2];
 
 /* Private function prototypes -----------------------------------------------*/
 
@@ -106,7 +106,7 @@ int main(void)
 		FreeRTOS_inet_pton6( mainIPv6_DNS_SERVER_ADDR, xDNSServer.ucBytes );
 		FreeRTOS_inet_pton6( mainIPv6_ADRR, xIPAddress.ucBytes );
 		FreeRTOS_inet_pton6( mainIPv6_GATEWAY_ADDR, xGateWay.ucBytes );
-/*
+
 		FreeRTOS_FillEndPoint_IPv6( &( xInterfaces[ 0 ] ),
 						&( xEndPoints[ 1 ] ),
 						&( xIPAddress ),
@@ -114,7 +114,7 @@ int main(void)
 						64,            // Prefix length.
 						&( xGateWay ),
 						&( xDNSServer ), // pxDNSServerAddress: Not used yet.
-						ucMACAddress );*/
+						ucMACAddress );
 
 		configPRINTF( ("Done!\r\n") );
 
@@ -135,7 +135,7 @@ int main(void)
 		BaseType_t xRet;
 		//xRet = xTaskCreate(vTaskUDPSendIPv4, "Def", 1024, NULL, tskIDLE_PRIORITY+1, NULL);
 		//xRet = xTaskCreate(vTaskUDPSendIPv6, "Def", 1024, NULL, tskIDLE_PRIORITY+1, NULL);
-		xRet = xTaskCreate(vTaskTCPSendIPv4, "Def", 256, NULL, tskIDLE_PRIORITY+1, NULL);
+		xRet = xTaskCreate(vTaskTCPSendIPv4, "Def", 1024, NULL, tskIDLE_PRIORITY+1, NULL);
 		vTaskStartScheduler();
 
 		/* Infinite loop */

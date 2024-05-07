@@ -2,7 +2,7 @@
 #ifndef IP_TRACE_MACRO_H
 #define IP_TRACE_MACRO_H
 
-#define iptracePRINT_FUNC( X ) vLoggerPrintlineFast X
+#define iptracePRINT_FUNC( X ) vLoggerPrint X
 
 #if 1
 

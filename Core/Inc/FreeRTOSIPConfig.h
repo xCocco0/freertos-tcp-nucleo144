@@ -27,9 +27,12 @@
 #define ipconfigUSE_TCP_WIN ipconfigENABLE
 
 #ifdef DEBUG
+
+		// increase stack to fit debug printf
+		#define ipconfigIP_TASK_STACK_SIZE_WORDS configMINIMAL_STACK_SIZE + 128
+
 		#define ipconfigHAS_DEBUG_PRINTF ipconfigENABLE
-		//#define FreeRTOS_debug_printf( MSG )    do { configPRINTF( MSG ); configPRINTF( ("\r") ); } while( ipFALSE_BOOL )
-		#define FreeRTOS_debug_printf( MSG )    vLoggerPrintlineFast MSG
+		#define FreeRTOS_debug_printf( MSG )    vLoggerPrintline MSG
 
 		#include "IPTraceMacro.h"
 #endif
