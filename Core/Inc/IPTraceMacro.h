@@ -38,7 +38,7 @@
 		case eSocketSelectEvent: iptracePRINT_FUNC( ("Send a message to the IP task for select") ); break; \
 		case eSocketSignalEvent: iptracePRINT_FUNC( ("A socket must be signalled") ); break; \
 		case eSocketSetDeleteEvent: iptracePRINT_FUNC( ("A socket must be deleted") ); break; \
-		default: \
+		default: break;\
 	} \
 	iptracePRINT_FUNC( ("\r\n") ); \
 	} while (0)

@@ -61,7 +61,7 @@ void vTaskUDPSendIPv4(void *argument)
 		struct freertos_sockaddr xDestinationAddress;
 		xDestinationAddress.sin_addr = FreeRTOS_inet_addr(DST_ADDR_4);
 		xDestinationAddress.sin_port = FreeRTOS_htons(DST_PORT);
-		xDestinationAddress.sin_family = FREERTOS_AFxy_INET(4,3);
+		xDestinationAddress.sin_family = FREERTOS_AF_INET;
 
 		char cMsg[32];
 

@@ -223,7 +223,10 @@ $(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/FreeRTOS_Tiny_TCP.c \
 $(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/FreeRTOS_UDP_IP.c \
 $(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/FreeRTOS_UDP_IPv4.c \
 $(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/FreeRTOS_UDP_IPv6.c \
-$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/portable/BufferManagement/BufferAllocation_2.c
+$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/portable/BufferManagement/BufferAllocation_2.c \
+$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/portable/NetworkInterface/STM32Fxx/NetworkInterface.c \
+$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/portable/NetworkInterface/STM32Fxx/stm32fxx_hal_eth.c \
+$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/portable/NetworkInterface/Common/phyHandling.c
 
 C_SOURCES = $(C_SOURCES_CORE) $(C_SOURCES_DRIVERS) $(C_SOURCES_MIDDLEWARES)
 
@@ -289,35 +292,24 @@ AS_INCLUDES =  \
 # C includes
 C_INCLUDES_CORE = \
 -I$(CORE_DIR)/Inc \
--I$(DRIVERS_DIR)/STM32F4xx_HAL_Driver/Inc \
--I$(DRIVERS_DIR)/STM32F4xx_HAL_Driver/Inc/Legacy \
--I$(DRIVERS_DIR)/CMSIS/Device/ST/STM32F4xx/Include \
--I$(DRIVERS_DIR)/CMSIS/Include \
--I$(MIDDLEWARES_DIR)/FreeRTOS/include \
--I$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/include \
--I$(MIDDLEWARES_DIR)/FreeRTOS/portable/GCC/ARM_CM4F \
--I$(MIDDLEWARES_DIR)/FreeRTOS/CMSIS_RTOS \
--I$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/portable/Compiler/GCC
 
 C_INCLUDES_DRIVERS = \
--I$(CORE_DIR)/Inc \
 -I$(DRIVERS_DIR)/STM32F4xx_HAL_Driver/Inc \
 -I$(DRIVERS_DIR)/STM32F4xx_HAL_Driver/Inc/Legacy \
+-I$(DRIVERS_DIR)/CMSIS/Include \
 -I$(DRIVERS_DIR)/CMSIS/Device/ST/STM32F4xx/Include \
--I$(DRIVERS_DIR)/CMSIS/Include
+-I$(DRIVERS_DIR)/CMSIS/Device/ST/STM32F4xx/Include
 
 C_INCLUDES_MIDDLEWARE = \
--I$(CORE_DIR)/Inc \
--I$(DRIVERS_DIR)/CMSIS/Include \
 -I$(MIDDLEWARES_DIR)/FreeRTOS/include \
 -I$(MIDDLEWARES_DIR)/FreeRTOS/CMSIS_RTOS \
 -I$(MIDDLEWARES_DIR)/FreeRTOS/portable/GCC/ARM_CM4F \
--I$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/portable/Compiler/GCC \
--I$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/include
-#-I$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/portable/NetworkInterface/include \
--I$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/portable/NetworkInterface/STM32Fxx
+-I$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/include \
+-I$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/portable/NetworkInterface/include \
+-I$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/portable/NetworkInterface/STM32Fxx \
+-I$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/portable/Compiler/GCC
 
-C_INCLUDES = $(C_INCLUDES_CORE) $(C_INCLUDES_DRIVERS) $(C_INCLUDES_MIDDLEWARE)
+C_INCLUDES = $(C_INCLUDES_MIDDLEWARE) $(C_INCLUDES_CORE) $(C_INCLUDES_DRIVERS)
 
 #######################################
 # CFLAGS
