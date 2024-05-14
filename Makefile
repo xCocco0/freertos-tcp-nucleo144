@@ -224,9 +224,9 @@ $(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/FreeRTOS_UDP_IP.c \
 $(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/FreeRTOS_UDP_IPv4.c \
 $(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/FreeRTOS_UDP_IPv6.c \
 $(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/portable/BufferManagement/BufferAllocation_2.c \
-$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/portable/NetworkInterface/STM32Fxx/NetworkInterface.c \
 $(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/portable/NetworkInterface/STM32Fxx/stm32fxx_hal_eth.c \
-$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/portable/NetworkInterface/Common/phyHandling.c
+$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/portable/NetworkInterface/Common/phyHandling.c \
+$(MIDDLEWARES_DIR)/FreeRTOS-TSN-Compatibility-Layer/portable/NetworkInterface/Common/NetworkWrapper.c
 
 C_SOURCES = $(C_SOURCES_CORE) $(C_SOURCES_DRIVERS) $(C_SOURCES_MIDDLEWARES)
 
@@ -309,6 +309,7 @@ C_INCLUDES_MIDDLEWARE = \
 -I$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/portable/NetworkInterface/STM32Fxx \
 -I$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/portable/Compiler/GCC
 
+# Note: FreeRTOS-Plus-TCP/portable/NetworkInterface must be include before the drivers
 C_INCLUDES = $(C_INCLUDES_MIDDLEWARE) $(C_INCLUDES_CORE) $(C_INCLUDES_DRIVERS)
 
 #######################################
