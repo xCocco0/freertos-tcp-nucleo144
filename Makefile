@@ -228,6 +228,9 @@ $(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/portable/NetworkInterface/STM32Fxx/stm32fxx
 $(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/portable/NetworkInterface/Common/phyHandling.c \
 $(MIDDLEWARES_DIR)/FreeRTOS-TSN-Compatibility-Layer/portable/NetworkInterface/Common/NetworkWrapper.c
 
+C_SOURCES_MIDDLEWARES += $(wildcard $(MIDDLEWARES_DIR)/FreeRTOS-TSN-Compatibility-Layer/*.c)
+
+
 C_SOURCES = $(C_SOURCES_CORE) $(C_SOURCES_DRIVERS) $(C_SOURCES_MIDDLEWARES)
 
 # ASM sources
@@ -307,7 +310,8 @@ C_INCLUDES_MIDDLEWARE = \
 -I$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/include \
 -I$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/portable/NetworkInterface/include \
 -I$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/portable/NetworkInterface/STM32Fxx \
--I$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/portable/Compiler/GCC
+-I$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/portable/Compiler/GCC \
+-I$(MIDDLEWARES_DIR)/FreeRTOS-TSN-Compatibility-Layer/include
 
 # Note: FreeRTOS-Plus-TCP/portable/NetworkInterface must be include before the drivers
 C_INCLUDES = $(C_INCLUDES_MIDDLEWARE) $(C_INCLUDES_CORE) $(C_INCLUDES_DRIVERS)

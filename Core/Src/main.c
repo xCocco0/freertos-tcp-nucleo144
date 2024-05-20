@@ -62,6 +62,8 @@ extern void vTaskUDPSendIPv4(void *argument);
 extern void vTaskUDPSendIPv6(void *argument);
 extern void vTaskTCPSendIPv4(void *argument);
 
+#include "FreeRTOS_TSN_NetworkQueues.h"
+
 /**
  * @brief  The application entry point.
  * @retval int
@@ -91,6 +93,24 @@ int main(void)
 		configPRINTF( ("# %-38s #\r\n", "Compiled: "__DATE__" "__TIME__) );
 		configPRINTF( ("#----------------------------------------#\r\n") );
 		#endif
+
+		// REMOVE
+		vNetworkQueueInit();
+		NetworkBufferDescriptor_t xBuf1, xBuf2;
+		xBuf1.usPort = 81;
+		xBuf2.usPort = 82;
+		NetworkBufferDescriptor_t * pxBuf;
+		//NetworkQueue_t *q = pxNetworkQueueSearchMatch( NULL );
+		xNetworkQueueInsertPacket( &xBuf1 );
+		xNetworkQueueInsertPacket( &xBuf2 );
+
+		pxBuf = pxNetworkQueueRetrievePacket();
+		configPRINTF( ("pxBuf=%p\r\n", pxBuf) );
+
+		pxBuf = pxNetworkQueueRetrievePacket();
+		configPRINTF( ("pxBuf=%p\r\n", pxBuf) );
+
+		// endREMOVE
 
 		/* Networking configuration-------------------------------------------------*/
 
