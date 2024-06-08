@@ -27,8 +27,10 @@ case $1 in
 		st-flash --reset write $TARGET 0x8000000 2> /dev/null
 		if [ $? -eq 0 ]; then
 			echo Flashed successfully
+			exit 0
 		else
 			echo Error
+			exit 1
 		fi
 		;;
 	"reset")

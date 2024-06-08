@@ -2,7 +2,6 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "string.h"
-#include "cmsis_os.h"
 #include "FreeRTOS_IP.h"
 #include "FreeRTOS_Sockets.h"
 #include "peripherals.h"
@@ -33,8 +32,6 @@ extern UART_HandleTypeDef huart3;
 extern PCD_HandleTypeDef hpcd_USB_OTG_FS;
 
 extern RNG_HandleTypeDef hrng;
-
-osThreadId defaultTaskHandle;
 
 const uint8_t ucIPAddress[ ipIP_ADDRESS_LENGTH_BYTES ] = {
 		configIP_ADDR0, configIP_ADDR1, configIP_ADDR2, configIP_ADDR3
@@ -130,14 +127,6 @@ int main(void)
 		
 		/* Task definitions---------------------------------------------------------*/
 
-		/* Create the thread(s) */
-		/* definition and creation of defaultTask */
-		//osThreadDef(defaultTask, StartDefaultTask, osPriorityHigh, 0, 128);
-		//defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
-
-		/* Start scheduler */
-		//osKernelStart();
-		
 		vNetworkQueueInit();
 		prvTSNController_Initialise();
 
