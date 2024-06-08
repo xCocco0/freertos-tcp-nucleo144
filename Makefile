@@ -225,12 +225,12 @@ $(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/source/FreeRTOS_UDP_IPv6.c \
 $(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/source/portable/BufferManagement/BufferAllocation_2.c \
 $(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/source/portable/NetworkInterface/STM32Fxx/NetworkInterface.c \
 $(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/source/portable/NetworkInterface/STM32Fxx/stm32fxx_hal_eth.c \
-$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/source/portable/NetworkInterface/Common/phyHandling.c
-$(MIDDLEWARES_DIR)/FreeRTOS-TSN-Compatibility-Layer/portable/NetworkInterface/Common/NetworkWrapper.c
+$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/source/portable/NetworkInterface/Common/phyHandling.c \
+$(MIDDLEWARES_DIR)/FreeRTOS-TSN-Compatibility-Layer/source/portable/NetworkInterface/Common/NetworkWrapper.c
 
-C_SOURCES_MIDDLEWARES += $(wildcard $(MIDDLEWARES_DIR)/FreeRTOS-TSN-Compatibility-Layer/*.c)
-C_SOURCES_MIDDLEWARES += $(wildcard $(MIDDLEWARES_DIR)/FreeRTOS-TSN-Compatibility-Layer/modules/BasicSchedulers/*.c)
-C_SOURCES_MIDDLEWARES += $(wildcard $(MIDDLEWARES_DIR)/FreeRTOS-TSN-Compatibility-Layer/modules/CreditBasedScheduler/*.c)
+C_SOURCES_MIDDLEWARES += $(wildcard $(MIDDLEWARES_DIR)/FreeRTOS-TSN-Compatibility-Layer/source/*.c)
+C_SOURCES_MIDDLEWARES += $(wildcard $(MIDDLEWARES_DIR)/FreeRTOS-TSN-Compatibility-Layer/source/modules/BasicSchedulers/*.c)
+C_SOURCES_MIDDLEWARES += $(wildcard $(MIDDLEWARES_DIR)/FreeRTOS-TSN-Compatibility-Layer/source/modules/CreditBasedScheduler/*.c)
 
 C_SOURCES = $(C_SOURCES_CORE) $(C_SOURCES_DRIVERS) $(C_SOURCES_MIDDLEWARES)
 
@@ -310,12 +310,12 @@ C_INCLUDES_MIDDLEWARE = \
 -I$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/source/include \
 -I$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/source/portable/NetworkInterface/include \
 -I$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/source/portable/NetworkInterface/STM32Fxx \
--I$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/source/portable/Compiler/GCC
--I$(MIDDLEWARES_DIR)/FreeRTOS-TSN-Compatibility-Layer/include \
--I$(MIDDLEWARES_DIR)/FreeRTOS-TSN-Compatibility-Layer/portable/NetworkInterface/include \
--I$(MIDDLEWARES_DIR)/FreeRTOS-TSN-Compatibility-Layer/modules/BasicSchedulers \
--I$(MIDDLEWARES_DIR)/FreeRTOS-TSN-Compatibility-Layer/modules/CreditBasedScheduler \
--I$(MIDDLEWARES_DIR)/FreeRTOS-TSN-Compatibility-Layer/modules/VLANTagFilter
+-I$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/source/portable/Compiler/GCC \
+-I$(MIDDLEWARES_DIR)/FreeRTOS-TSN-Compatibility-Layer/source/include \
+-I$(MIDDLEWARES_DIR)/FreeRTOS-TSN-Compatibility-Layer/source/portable/NetworkInterface/include \
+-I$(MIDDLEWARES_DIR)/FreeRTOS-TSN-Compatibility-Layer/source/modules/BasicSchedulers \
+-I$(MIDDLEWARES_DIR)/FreeRTOS-TSN-Compatibility-Layer/source/modules/CreditBasedScheduler \
+-I$(MIDDLEWARES_DIR)/FreeRTOS-TSN-Compatibility-Layer/source/modules/VLANTagFilter
 
 # Note: FreeRTOS-Plus-TCP/portable/NetworkInterface must be include before the drivers
 C_INCLUDES = $(C_INCLUDES_MIDDLEWARE) $(C_INCLUDES_CORE) $(C_INCLUDES_DRIVERS)

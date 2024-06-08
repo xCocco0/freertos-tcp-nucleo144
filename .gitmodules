@@ -4,3 +4,6 @@
 [submodule "Middlewares/FreeRTOS-Plus-TCP"]
 	path = Middlewares/FreeRTOS-Plus-TCP
 	url = https://github.com/FreeRTOS/FreeRTOS-Plus-TCP.git
+[submodule "Middlewares/FreeRTOS-TSN-Compatibility-Layer"]
+	path = Middlewares/FreeRTOS-TSN-Compatibility-Layer
+	url = https://github.com/xCocco0/FreeRTOS-TSN-Compatibility-Layer.git
