@@ -177,56 +177,55 @@ $(MIDDLEWARES_DIR)/FreeRTOS/queue.c \
 $(MIDDLEWARES_DIR)/FreeRTOS/stream_buffer.c \
 $(MIDDLEWARES_DIR)/FreeRTOS/tasks.c \
 $(MIDDLEWARES_DIR)/FreeRTOS/timers.c \
-$(MIDDLEWARES_DIR)/FreeRTOS/CMSIS_RTOS/cmsis_os.c \
 $(MIDDLEWARES_DIR)/FreeRTOS/portable/MemMang/heap_4.c \
 $(MIDDLEWARES_DIR)/FreeRTOS/portable/GCC/ARM_CM4F/port.c \
 \
-$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/FreeRTOS_ARP.c \
-$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/FreeRTOS_BitConfig.c \
-$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/FreeRTOS_DHCP.c \
-$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/FreeRTOS_DHCPv6.c \
-$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/FreeRTOS_DNS.c \
-$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/FreeRTOS_DNS_Cache.c \
-$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/FreeRTOS_DNS_Callback.c \
-$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/FreeRTOS_DNS_Networking.c \
-$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/FreeRTOS_DNS_Parser.c \
-$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/FreeRTOS_ICMP.c \
-$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/FreeRTOS_IP.c \
-$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/FreeRTOS_IP_Timers.c \
-$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/FreeRTOS_IP_Utils.c \
-$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/FreeRTOS_IPv4.c \
-$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/FreeRTOS_IPv4_Sockets.c \
-$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/FreeRTOS_IPv4_Utils.c \
-$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/FreeRTOS_IPv6.c \
-$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/FreeRTOS_IPv6_Sockets.c \
-$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/FreeRTOS_IPv6_Utils.c \
-$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/FreeRTOS_ND.c \
-$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/FreeRTOS_RA.c \
-$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/FreeRTOS_Routing.c \
-$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/FreeRTOS_Sockets.c \
-$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/FreeRTOS_Stream_Buffer.c \
-$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/FreeRTOS_TCP_IP.c \
-$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/FreeRTOS_TCP_IP_IPv4.c \
-$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/FreeRTOS_TCP_IP_IPv6.c \
-$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/FreeRTOS_TCP_Reception.c \
-$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/FreeRTOS_TCP_State_Handling.c \
-$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/FreeRTOS_TCP_State_Handling_IPv4.c \
-$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/FreeRTOS_TCP_State_Handling_IPv6.c \
-$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/FreeRTOS_TCP_Transmission.c \
-$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/FreeRTOS_TCP_Transmission_IPv4.c \
-$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/FreeRTOS_TCP_Transmission_IPv6.c \
-$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/FreeRTOS_TCP_Utils.c \
-$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/FreeRTOS_TCP_Utils_IPv4.c \
-$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/FreeRTOS_TCP_Utils_IPv6.c \
-$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/FreeRTOS_TCP_WIN.c \
-$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/FreeRTOS_Tiny_TCP.c \
-$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/FreeRTOS_UDP_IP.c \
-$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/FreeRTOS_UDP_IPv4.c \
-$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/FreeRTOS_UDP_IPv6.c \
-$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/portable/BufferManagement/BufferAllocation_2.c \
-$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/portable/NetworkInterface/STM32Fxx/NetworkInterface.c \
-$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/portable/NetworkInterface/STM32Fxx/stm32fxx_hal_eth.c \
-$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/portable/NetworkInterface/Common/phyHandling.c
+$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/source/FreeRTOS_ARP.c \
+$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/source/FreeRTOS_BitConfig.c \
+$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/source/FreeRTOS_DHCP.c \
+$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/source/FreeRTOS_DHCPv6.c \
+$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/source/FreeRTOS_DNS.c \
+$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/source/FreeRTOS_DNS_Cache.c \
+$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/source/FreeRTOS_DNS_Callback.c \
+$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/source/FreeRTOS_DNS_Networking.c \
+$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/source/FreeRTOS_DNS_Parser.c \
+$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/source/FreeRTOS_ICMP.c \
+$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/source/FreeRTOS_IP.c \
+$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/source/FreeRTOS_IP_Timers.c \
+$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/source/FreeRTOS_IP_Utils.c \
+$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/source/FreeRTOS_IPv4.c \
+$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/source/FreeRTOS_IPv4_Sockets.c \
+$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/source/FreeRTOS_IPv4_Utils.c \
+$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/source/FreeRTOS_IPv6.c \
+$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/source/FreeRTOS_IPv6_Sockets.c \
+$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/source/FreeRTOS_IPv6_Utils.c \
+$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/source/FreeRTOS_ND.c \
+$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/source/FreeRTOS_RA.c \
+$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/source/FreeRTOS_Routing.c \
+$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/source/FreeRTOS_Sockets.c \
+$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/source/FreeRTOS_Stream_Buffer.c \
+$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/source/FreeRTOS_TCP_IP.c \
+$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/source/FreeRTOS_TCP_IP_IPv4.c \
+$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/source/FreeRTOS_TCP_IP_IPv6.c \
+$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/source/FreeRTOS_TCP_Reception.c \
+$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/source/FreeRTOS_TCP_State_Handling.c \
+$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/source/FreeRTOS_TCP_State_Handling_IPv4.c \
+$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/source/FreeRTOS_TCP_State_Handling_IPv6.c \
+$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/source/FreeRTOS_TCP_Transmission.c \
+$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/source/FreeRTOS_TCP_Transmission_IPv4.c \
+$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/source/FreeRTOS_TCP_Transmission_IPv6.c \
+$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/source/FreeRTOS_TCP_Utils.c \
+$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/source/FreeRTOS_TCP_Utils_IPv4.c \
+$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/source/FreeRTOS_TCP_Utils_IPv6.c \
+$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/source/FreeRTOS_TCP_WIN.c \
+$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/source/FreeRTOS_Tiny_TCP.c \
+$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/source/FreeRTOS_UDP_IP.c \
+$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/source/FreeRTOS_UDP_IPv4.c \
+$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/source/FreeRTOS_UDP_IPv6.c \
+$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/source/portable/BufferManagement/BufferAllocation_2.c \
+$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/source/portable/NetworkInterface/STM32Fxx/NetworkInterface.c \
+$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/source/portable/NetworkInterface/STM32Fxx/stm32fxx_hal_eth.c \
+$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/source/portable/NetworkInterface/Common/phyHandling.c
 
 C_SOURCES = $(C_SOURCES_CORE) $(C_SOURCES_DRIVERS) $(C_SOURCES_MIDDLEWARES)
 
@@ -302,12 +301,11 @@ C_INCLUDES_DRIVERS = \
 
 C_INCLUDES_MIDDLEWARE = \
 -I$(MIDDLEWARES_DIR)/FreeRTOS/include \
--I$(MIDDLEWARES_DIR)/FreeRTOS/CMSIS_RTOS \
 -I$(MIDDLEWARES_DIR)/FreeRTOS/portable/GCC/ARM_CM4F \
--I$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/include \
--I$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/portable/NetworkInterface/include \
--I$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/portable/NetworkInterface/STM32Fxx \
--I$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/portable/Compiler/GCC
+-I$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/source/include \
+-I$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/source/portable/NetworkInterface/include \
+-I$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/source/portable/NetworkInterface/STM32Fxx \
+-I$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/source/portable/Compiler/GCC
 
 C_INCLUDES = $(C_INCLUDES_MIDDLEWARE) $(C_INCLUDES_CORE) $(C_INCLUDES_DRIVERS)
 

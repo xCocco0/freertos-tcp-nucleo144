@@ -2,7 +2,6 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "string.h"
-#include "cmsis_os.h"
 #include "FreeRTOS_IP.h"
 #include "FreeRTOS_Sockets.h"
 #include "peripherals.h"
@@ -75,7 +74,7 @@ void vTaskUDPSendIPv4(void *argument)
 			configPRINTF( ("sent %d bytes.\r\n", xRet) );
 			configASSERT(xRet >= 0);
 			HAL_GPIO_TogglePin(GPIOB, LD3_Pin);
-			osDelay(5000UL);
+			vTaskDelay(5000UL);
 			//vTaskDelay(1000UL / portTICK_PERIOD_MS);
 		}
 	}
@@ -131,7 +130,7 @@ void vTaskUDPSendIPv6(void *argument)
 			configPRINTF( ("sent %d bytes.\r\n", xRet) );
 			configASSERT(xRet >= 0);
 			HAL_GPIO_TogglePin(GPIOB, LD3_Pin);
-			osDelay(5000UL);
+			vTaskDelay(5000UL);
 			//vTaskDelay(1000UL / portTICK_PERIOD_MS);
 		}
 	}
@@ -202,7 +201,7 @@ void vTaskTCPSendIPv4(void *argument)
 			configPRINTF( ("sent %d bytes.\r\n", xRet) );
 			configASSERT(xRet >= 0);
 			HAL_GPIO_TogglePin(GPIOB, LD3_Pin);
-			osDelay(5000UL);
+			vTaskDelay(5000UL);
 			//vTaskDelay(1000UL / portTICK_PERIOD_MS);
 		}
 	}
@@ -274,7 +273,7 @@ void task_(void *argument)
 			configPRINTF( ("sent %d bytes.\r\n", xRet) );
 			configASSERT(xRet >= 0);
 			HAL_GPIO_TogglePin(GPIOB, LD3_Pin);
-			osDelay(1000UL);
+			vTaskDelay(1000UL);
 			//vTaskDelay(1000UL / portTICK_PERIOD_MS);
 		}
 	}
