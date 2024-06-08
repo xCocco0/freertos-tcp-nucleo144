@@ -7,6 +7,11 @@
 #include "FreeRTOS_Sockets.h"
 #include "peripherals.h"
 
+#include "FreeRTOS_TSN_NetworkScheduler.h"
+#include "FreeRTOS_TSN_Controller.h"
+#include "FreeRTOS_TSN_VLANTags.h"
+#include "FreeRTOS_TSN_Sockets.h"
+
 #ifdef DEBUG
 //#include "printf_stdarg.h"
 #include "logger.h"
@@ -61,8 +66,7 @@ NetworkEndPoint_t xEndPoints[2];
 extern void vTaskUDPSendIPv4(void *argument);
 extern void vTaskUDPSendIPv6(void *argument);
 extern void vTaskTCPSendIPv4(void *argument);
-
-#include "FreeRTOS_TSN_NetworkQueues.h"
+extern void vTaskTSNTest(void *argvument);
 
 /**
  * @brief  The application entry point.
@@ -93,24 +97,6 @@ int main(void)
 		configPRINTF( ("# %-38s #\r\n", "Compiled: "__DATE__" "__TIME__) );
 		configPRINTF( ("#----------------------------------------#\r\n") );
 		#endif
-
-		// REMOVE
-		vNetworkQueueInit();
-		NetworkBufferDescriptor_t xBuf1, xBuf2;
-		xBuf1.usPort = 81;
-		xBuf2.usPort = 82;
-		NetworkBufferDescriptor_t * pxBuf;
-		//NetworkQueue_t *q = pxNetworkQueueSearchMatch( NULL );
-		xNetworkQueueInsertPacket( &xBuf1 );
-		xNetworkQueueInsertPacket( &xBuf2 );
-
-		pxBuf = pxNetworkQueueRetrievePacket();
-		configPRINTF( ("pxBuf=%p\r\n", pxBuf) );
-
-		pxBuf = pxNetworkQueueRetrievePacket();
-		configPRINTF( ("pxBuf=%p\r\n", pxBuf) );
-
-		// endREMOVE
 
 		/* Networking configuration-------------------------------------------------*/
 
@@ -151,11 +137,16 @@ int main(void)
 
 		/* Start scheduler */
 		//osKernelStart();
-		//
+		
+		vNetworkQueueInit();
+		prvTSNController_Initialise();
+
 		BaseType_t xRet;
-		//xRet = xTaskCreate(vTaskUDPSendIPv4, "Def", 1024, NULL, tskIDLE_PRIORITY+1, NULL);
-		//xRet = xTaskCreate(vTaskUDPSendIPv6, "Def", 1024, NULL, tskIDLE_PRIORITY+1, NULL);
-		xRet = xTaskCreate(vTaskTCPSendIPv4, "Def", 1024, NULL, tskIDLE_PRIORITY+1, NULL);
+		//xRet = xTaskCreate(vTaskUDPSendIPv4, "UDPSendIPv4", 1024, NULL, tskIDLE_PRIORITY+1, NULL);
+		//xRet = xTaskCreate(vTaskUDPSendIPv6, "UDPSendIPv6", 1024, NULL, tskIDLE_PRIORITY+1, NULL);
+		//xRet = xTaskCreate(vTaskTCPSendIPv4, "TCPSendIPv4", 1024, NULL, tskIDLE_PRIORITY+1, NULL);
+		xRet = xTaskCreate(vTaskTSNTest, "TSNTest", 1024, NULL, tskIDLE_PRIORITY+1, NULL);
+
 		vTaskStartScheduler();
 
 		/* Infinite loop */

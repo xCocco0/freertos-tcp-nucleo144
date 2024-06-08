@@ -6,6 +6,13 @@
 #include "FreeRTOS_IP.h"
 #include "FreeRTOS_Sockets.h"
 #include "peripherals.h"
+#include "FreeRTOS_ARP.h"
+
+#include "FreeRTOS_TSN_NetworkScheduler.h"
+#include "FreeRTOS_TSN_Controller.h"
+#include "FreeRTOS_TSN_VLANTags.h"
+#include "FreeRTOS_TSN_Sockets.h"
+#include "FreeRTOS_TSN_DS.h"
 
 #ifdef DEBUG
 #include "logger.h"
@@ -20,10 +27,102 @@
 #define SRC_PORT 10000
 
 
+void vTaskTSNTest(void *argvument);
 void vTaskUDPSendIPv4(void *argument);
 void vTaskUDPSendIPv6(void *argument);
 void vTaskTCPSendIPv4(void *argument);
 void vTaskTCPSendIPv6(void *argument);
+
+/**
+ * @brief  Test
+ * @param  argument: Not used
+ * @retval None
+ */
+void vTaskTSNTest(void *argvument)
+{
+		BaseType_t xRet;
+
+
+		/* -- create socket -- */
+		configPRINTF( ("Creating socket...\r\n") );
+		TSNSocket_t xSock = FreeRTOS_TSN_socket(FREERTOS_AF_INET4,
+				 FREERTOS_SOCK_DGRAM, 
+				 FREERTOS_IPPROTO_UDP);
+		if( xSock == FREERTOS_TSN_INVALID_SOCKET ) {
+			configPRINTF( ("Socket error\r\n") );
+			for(;;);
+		}
+		configPRINTF( ("Done!\r\n") );
+
+		if( FreeRTOS_TSN_setsockopt( xSock, 0, FREERTOS_SO_VLAN_CTAG_PCP, ( void * ) vlantagCLASS_1, sizeof( void * ) ) != 0 )
+		{
+			configPRINTF( ("setsockopt error\r\n") );
+			for(;;);
+		}
+		if( FreeRTOS_TSN_setsockopt( xSock, 0, FREERTOS_SO_VLAN_STAG_PCP, ( void * ) vlantagCLASS_2, sizeof( void * ) ) != 0 )
+		{
+			configPRINTF( ("setsockopt error\r\n") );
+			for(;;);
+		}
+		if( FreeRTOS_TSN_setsockopt( xSock, 0, FREERTOS_SO_DS_CLASS, ( void * ) diffservCLASS_AFxy(2,3), sizeof( void * ) ) != 0 )
+		{
+			configPRINTF( ("setsockopt error\r\n") );
+			for(;;);
+		}
+
+		UBaseType_t xSourceAddrLen;
+		struct freertos_sockaddr xDestinationAddress, xSourceAddress;
+		xDestinationAddress.sin_addr = FreeRTOS_inet_addr(DST_ADDR_4);
+		xDestinationAddress.sin_port = FreeRTOS_htons(DST_PORT);
+		xDestinationAddress.sin_family = FREERTOS_AF_INET;
+		xSourceAddress.sin_addr = FreeRTOS_inet_addr(SRC_ADDR_4);
+		xSourceAddress.sin_port = FreeRTOS_htons(SRC_PORT);
+		xSourceAddress.sin_family = FREERTOS_AF_INET;
+
+		/* -- bind socket -- */
+		configPRINTF( ("Binding socket...\r\n") );
+		xRet = FreeRTOS_TSN_bind(xSock, &xSourceAddress, sizeof( xSourceAddress ) );
+		if(xRet) {
+			configPRINTF( ("Socket could not be bound: error %d\r\n", xRet) );
+			for(;;);
+		}
+		configPRINTF( ("Done!\r\n") );
+
+		MACAddress_t xDestMAC = { .ucBytes = {0x8C,0xDC,0xD4,0x90,0x5D,0x33} };
+		NetworkEndPoint_t * pxEndPoint = FreeRTOS_FindEndPointOnNetMask( xDestinationAddress.sin_address.ulIP_IPv4, 14 );
+
+		vTaskDelay(1000U);
+		vARPRefreshCacheEntry( &xDestMAC, xDestinationAddress.sin_address.ulIP_IPv4, pxEndPoint);
+
+		char cMsg[32];
+
+		for(int i = 0;; ++i)
+		{
+			sprintf(cMsg, "Hello world n.%d", i);
+			configPRINTF( ("Sending message \"%s\"...", cMsg) );
+
+			xRet = FreeRTOS_TSN_sendto( xSock, cMsg, configMIN(sizeof(cMsg), strlen(cMsg)), 0,
+					&xDestinationAddress, sizeof(xDestinationAddress) );
+			configPRINTF( ("sent %d bytes.\r\n", xRet) );
+			if(xRet < 0)
+			{
+				configPRINTF( ("sendto error %d.\r\n", xRet) );
+				for(;;);
+			}
+
+			configPRINTF( ("Receiving...\r\n") );
+			xRet = FreeRTOS_TSN_recvfrom( xSock, cMsg, sizeof( cMsg ), 0, &xSourceAddress, &xSourceAddrLen );
+			if(xRet < 0)
+			{
+				configPRINTF( ("recvfrom error %d.\r\n", xRet) );
+				for(;;);
+			}
+			configPRINTF( ("Received message \"%s\"\r\n", cMsg) );
+			
+			vTaskDelay( pdMS_TO_TICKS( 2000 ) );
+		}
+}
+
 
 /**
  * @brief  Periodically send UDP packet using IPv4

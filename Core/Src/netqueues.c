@@ -3,6 +3,9 @@
 
 #include "FreeRTOS_TSN_NetworkScheduler.h"
 
+#include "BasicSchedulers.h"
+#include "SchedCBS.h"
+
 BaseType_t AlwaysTrue( NetworkBufferDescriptor_t *pxNetworkBuffer )
 {
 	return pdTRUE;
@@ -13,30 +16,44 @@ BaseType_t AlwaysFalse( NetworkBufferDescriptor_t *pxNetworkBuffer )
 	return pdFALSE;
 }
 
-BaseType_t Port80( NetworkBufferDescriptor_t *pxNetworkBuffer )
+BaseType_t Port10000( NetworkBufferDescriptor_t *pxNetworkBuffer )
 {
-	return pxNetworkBuffer->usPort == 80;
+	return ((UDPPacket_t *)pxNetworkBuffer->pucEthernetBuffer)->xUDPHeader.usDestinationPort == FreeRTOS_htons(10000);
 }
 
-void vNetworkQueueInit() {
-	
-	NetworkQueue_t *queue1, *queue2;
+BaseType_t PrintPacketIn( NetworkBufferDescriptor_t * pxBuf )
+{
+	//configPRINTF( ("PacketIn: %12s\r\n", pxBuf->pucEthernetBuffer) );
+	return pdPASS;
+}
 
-	queue1 = pxNetworkQueueCreate();
-	queue2 = pxNetworkQueueFromIPEventQueue();
+BaseType_t PrintPacketOut( NetworkBufferDescriptor_t * pxBuf )
+{
+	//configPRINTF( ("PacketOut: %12s\r\n", pxBuf->pucEthernetBuffer) );
+	return pdPASS;
+}
 
-	strcpy( (char *) &queue1->ucName, "queue1");
-	queue1->fnFilter = Port80;
+void vNetworkQueueInit( void ) {
 
-	strcpy( (char *) &queue2->ucName, "queue2");
-	queue2->fnFilter = AlwaysTrue;
+	NetworkQueue_t *queue1, *queue2, *queue3;
 
-	NetworkQueueNode_t *prio, *fifo, *cbs;
+	queue1 = pxNetworkQueueCreate( eSendRecv, 1, "queue1", Port10000 );
+	( void ) queue2;
+	queue3 = pxNetworkQueueCreate( eIPTaskEvents, 0, "queue3", NULL );
 
-	fifo = pxNetworkQueueNodeCreateFIFO();
-	fifo->pxQueue = queue1;
+	NetworkNode_t *prio, *fifo, *cbs;
 
-	( void ) xNetworkQueueAssignRoot( fifo );
+	cbs = pxNetworkNodeCreateCBS( 12*8, 12*2*8 );
+	( void ) xNetworkSchedulerLinkQueue( cbs, queue1 );
+
+	fifo = pxNetworkNodeCreateFIFO();
+	( void ) xNetworkSchedulerLinkQueue( fifo, queue3 );
+
+	prio = pxNetworkNodeCreatePrio( 2 );
+	( void ) xNetworkSchedulerLinkChild( prio, cbs, 0 );
+	( void ) xNetworkSchedulerLinkChild( prio, cbs, 1 );
+
+	( void ) xNetworkQueueAssignRoot( prio );
 }
 
 

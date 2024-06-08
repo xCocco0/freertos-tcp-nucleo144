@@ -34,7 +34,7 @@
 		#define ipconfigHAS_DEBUG_PRINTF ipconfigENABLE
 		#define FreeRTOS_debug_printf( MSG )    vLoggerPrintline MSG
 
-		#include "IPTraceMacro.h"
+		//#include "IPTraceMacro.h"
 #endif
 
 #endif /* FREERTOS_IP_CONFIG_H */

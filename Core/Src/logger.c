@@ -8,11 +8,11 @@
 #include <stdarg.h>
 #include "printf_stdarg.h"
 
-#define LOGGER_BUF_LEN 512U
+#define LOGGER_BUF_LEN 4096U
 #define LOGGER_TASK_PRIORITY tskIDLE_PRIORITY+1
 #define LOGGER_STACK_SIZE LOGGER_BUF_LEN/4 + 16
 
-#define PRINTER_TICKS_TO_WAIT (TickType_t) 0U
+#define PRINTER_TICKS_TO_WAIT (TickType_t) 10U
 
 static struct {
 
