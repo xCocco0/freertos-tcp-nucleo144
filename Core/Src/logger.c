@@ -59,6 +59,40 @@ void vLoggerInit(void) {
 						);
 }
 
+void vLoggerPrintFromISR(const char *format, ...)
+{	
+		va_list args;
+		uint16_t usRequiredLen, sMaxLen;
+		BaseType_t xHigherPriorityTaskWoken;
+
+		va_start( args, format );
+		
+		if( xSemaphoreTakeFromISR( xLoggerData.xLock, &xHigherPriorityTaskWoken ) != pdFALSE) {
+
+				sMaxLen = xLoggerData.usReadIndex - xLoggerData.usWriteIndex;
+				if( sMaxLen <= 0 ) sMaxLen += LOGGER_BUF_LEN;
+
+				usRequiredLen = vsnprintf(
+								xLoggerData.pcCopyBuffer,
+								LOGGER_BUF_LEN,
+								format,
+								args );
+
+				usRequiredLen = configMIN( usRequiredLen, sMaxLen );
+
+				( void ) prvUpdateFromCopyBuffer(usRequiredLen);
+			
+				vTaskNotifyGiveFromISR( xLoggerTaskHandle, &xHigherPriorityTaskWoken);
+				xSemaphoreGiveFromISR( xLoggerData.xLock, &xHigherPriorityTaskWoken );
+		} else {
+			xLoggerData.ucTimedOut = 1;
+		}
+
+		va_end( args );
+		
+		/* xHigherPriorityTaskWoken currently unused */
+}
+
 void vLoggerPrint(const char *format, ...)
 {	
 		va_list args;
@@ -82,7 +116,7 @@ void vLoggerPrint(const char *format, ...)
 				( void ) prvUpdateFromCopyBuffer(usRequiredLen);
 			
 				xTaskNotifyGive( xLoggerTaskHandle );
-				xSemaphoreGive( xLoggerData.xLock );
+				xSemaphoreGive( xLoggerData.xLock);
 		} else {
 			xLoggerData.ucTimedOut = 1;
 		}

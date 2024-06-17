@@ -223,7 +223,6 @@ $(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/source/FreeRTOS_UDP_IP.c \
 $(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/source/FreeRTOS_UDP_IPv4.c \
 $(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/source/FreeRTOS_UDP_IPv6.c \
 $(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/source/portable/BufferManagement/BufferAllocation_2.c \
-$(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/source/portable/NetworkInterface/STM32Fxx/NetworkInterface.c \
 $(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/source/portable/NetworkInterface/STM32Fxx/stm32fxx_hal_eth.c \
 $(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/source/portable/NetworkInterface/Common/phyHandling.c \
 $(MIDDLEWARES_DIR)/FreeRTOS-TSN-Compatibility-Layer/source/portable/NetworkInterface/Common/NetworkWrapper.c

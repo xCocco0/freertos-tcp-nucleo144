@@ -51,7 +51,7 @@ void vNetworkQueueInit( void ) {
 
 	prio = pxNetworkNodeCreatePrio( 2 );
 	( void ) xNetworkSchedulerLinkChild( prio, cbs, 0 );
-	( void ) xNetworkSchedulerLinkChild( prio, cbs, 1 );
+	( void ) xNetworkSchedulerLinkChild( prio, fifo, 1 );
 
 	( void ) xNetworkQueueAssignRoot( prio );
 }

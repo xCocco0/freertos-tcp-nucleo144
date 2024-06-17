@@ -12,16 +12,19 @@
 #include "FreeRTOS_TSN_VLANTags.h"
 #include "FreeRTOS_TSN_Sockets.h"
 #include "FreeRTOS_TSN_DS.h"
+#include "FreeRTOS_TSN_Ancillary.h"
+#include "FreeRTOS_TSN_Timestamp.h"
+#include "NetworkWrapper.h"
 
 #ifdef DEBUG
 #include "logger.h"
 #endif
 
-#define DST_ADDR_4 "169.254.151.41"
+#define DST_ADDR_4 "224.0.0.1" //"169.254.151.41"
 #define DST_ADDR_6 "fe80::4535:c3a4:9457:6e5a"
 #define DST_PORT 10000
 
-#define SRC_ADDR_4 "169.254.151.42"
+#define SRC_ADDR_4 "169.254.174.43"
 #define SRC_ADDR_6 "fe80::dead:beef"
 #define SRC_PORT 10000
 
@@ -32,6 +35,62 @@ void vTaskUDPSendIPv6(void *argument);
 void vTaskTCPSendIPv4(void *argument);
 void vTaskTCPSendIPv6(void *argument);
 
+const uint8_t xUDP_IPv4_test[] = {
+	configMAC_ADDR0,
+	configMAC_ADDR1,
+	configMAC_ADDR2,
+	configMAC_ADDR3,
+	configMAC_ADDR4,
+	configMAC_ADDR5, 	//dst mac
+	configMAC_ADDR0,
+	configMAC_ADDR1,
+	configMAC_ADDR2,
+	configMAC_ADDR3,
+	configMAC_ADDR4,
+	configMAC_ADDR5, 	//src mac
+	0x08, 0x00,			//frame type 
+	0x45,				//ip header len
+	0x0,				//ip dscp
+	0x0, 20+5,			//ip len
+	0x0, 0x0,			//ip id
+	0x0, 0x0,			//ip frag offset
+	0xff,				//ip ttl
+	0x11,				//ip proto
+	0x0, 0x0,			//ip chksum
+	configIP_ADDR0,
+	configIP_ADDR1,
+	configIP_ADDR2,
+	configIP_ADDR3,		//src ip
+	configIP_ADDR0,
+	configIP_ADDR1,
+	configIP_ADDR2,
+	configIP_ADDR3,		//dst ip
+	0x27, 0x10,			//src port
+	0x27, 0x10,			//dst port
+	0x0, 5,			//udp length
+	0x0, 0x0,			//udp chksum
+	0x61, 0x61, 0x61, 0x61,	0x61 //udp payload
+};
+
+void prvFakeReceiveFrame( const uint8_t * pxBuf, size_t uxSize )
+{
+	NetworkBufferDescriptor_t * pxNetworkBuffer;
+
+	pxNetworkBuffer = pxGetNetworkBufferWithDescriptor( uxSize, portMAX_DELAY );
+	memcpy( pxNetworkBuffer->pucEthernetBuffer, pxBuf, uxSize );
+
+	pxNetworkBuffer->pxInterface = FreeRTOS_FirstNetworkInterface();
+	pxNetworkBuffer->pxEndPoint = FreeRTOS_MatchingEndpoint( pxNetworkBuffer->pxInterface, pxNetworkBuffer->pucEthernetBuffer );
+	pxNetworkBuffer->xDataLength = uxSize;
+
+	IPStackEvent_t xRxEvent;
+
+    xRxEvent.eEventType = eNetworkRxEvent;
+    xRxEvent.pvData = ( void * ) pxNetworkBuffer;
+
+	( void ) xSendEventStructToTSNController( &xRxEvent, portMAX_DELAY );
+}
+
 /**
  * @brief  Test
  * @param  argument: Not used
@@ -40,7 +99,9 @@ void vTaskTCPSendIPv6(void *argument);
 void vTaskTSNTest(void *argvument)
 {
 		BaseType_t xRet;
+		BaseType_t xSockOpt;
 
+		struct freertos_timespec * ts;
 
 		/* -- create socket -- */
 		configPRINTF( ("Creating socket...\r\n") );
@@ -53,17 +114,28 @@ void vTaskTSNTest(void *argvument)
 		}
 		configPRINTF( ("Done!\r\n") );
 
-		if( FreeRTOS_TSN_setsockopt( xSock, 0, FREERTOS_SO_VLAN_CTAG_PCP, ( void * ) vlantagCLASS_1, sizeof( void * ) ) != 0 )
+		#if ( tsnconfigSOCKET_INSERTS_VLAN_TAGS != tsnconfigDISABLE )
+		xSockOpt = vlantagCLASS_1;
+		if( FreeRTOS_TSN_setsockopt( xSock, 0, FREERTOS_SO_VLAN_CTAG_PCP, &xSockOpt, sizeof( xSockOpt ) ) != 0 )
 		{
 			configPRINTF( ("setsockopt error\r\n") );
 			for(;;);
 		}
-		if( FreeRTOS_TSN_setsockopt( xSock, 0, FREERTOS_SO_VLAN_STAG_PCP, ( void * ) vlantagCLASS_2, sizeof( void * ) ) != 0 )
+		xSockOpt = vlantagCLASS_2;
+		if( FreeRTOS_TSN_setsockopt( xSock, 0, FREERTOS_SO_VLAN_STAG_PCP, &xSockOpt, sizeof( xSockOpt ) ) != 0 )
 		{
 			configPRINTF( ("setsockopt error\r\n") );
 			for(;;);
 		}
-		if( FreeRTOS_TSN_setsockopt( xSock, 0, FREERTOS_SO_DS_CLASS, ( void * ) diffservCLASS_AFxy(2,3), sizeof( void * ) ) != 0 )
+		#endif
+		xSockOpt = diffservCLASS_AFxy(2,3);
+		if( FreeRTOS_TSN_setsockopt( xSock, 0, FREERTOS_SO_DS_CLASS, &xSockOpt, sizeof( xSockOpt ) ) != 0 )
+		{
+			configPRINTF( ("setsockopt error\r\n") );
+			for(;;);
+		}
+		xSockOpt = SOF_TIMESTAMPING_RX_SOFTWARE | SOF_TIMESTAMPING_TX_SOFTWARE | SOF_TIMESTAMPING_SOFTWARE;
+		if( FreeRTOS_TSN_setsockopt( xSock, FREERTOS_SOL_SOCKET, FREERTOS_SO_TIMESTAMPING, &xSockOpt, sizeof( xSockOpt ) ) != 0 )
 		{
 			configPRINTF( ("setsockopt error\r\n") );
 			for(;;);
@@ -93,31 +165,72 @@ void vTaskTSNTest(void *argvument)
 		vTaskDelay(1000U);
 		vARPRefreshCacheEntry( &xDestMAC, xDestinationAddress.sin_address.ulIP_IPv4, pxEndPoint);
 
-		char cMsg[32];
+		char cMsg[64];
+		char iobuf[128];
+		union {
+			struct msghdr alignment;
+			char data[128];
+		} cbuf;
+		struct iovec xIovec = {
+			.iov_base = iobuf,
+			.iov_len = sizeof( iobuf )
+		};
+		struct msghdr xMsghdr = {
+			.msg_name = &xSourceAddress,
+			.msg_namelen = sizeof( xSourceAddress ),
+			.msg_iov = &xIovec,
+			.msg_iovlen = 1,
+			.msg_control = &cbuf.data,
+			.msg_controllen = sizeof( cbuf ),
+		};
+
+		void * dummy; // for debugging
+
+		sprintf(cMsg, "Hello world n.%d", 0);
+		configPRINTF( ("Sending message \"%s\"...", cMsg) );
+
+		xRet = FreeRTOS_TSN_sendto( xSock, cMsg, configMIN(sizeof(cMsg), strlen(cMsg)), 0,
+				&xDestinationAddress, sizeof(xDestinationAddress) );
+		configPRINTF( ("sent %d bytes.\r\n", xRet) );
+		if(xRet < 0)
+		{
+			configPRINTF( ("sendto error %d.\r\n", xRet) );
+			for(;;);
+		}
+
+		prvFakeReceiveFrame( xUDP_IPv4_test, sizeof( xUDP_IPv4_test ) );
 
 		for(int i = 0;; ++i)
 		{
-			sprintf(cMsg, "Hello world n.%d", i);
-			configPRINTF( ("Sending message \"%s\"...", cMsg) );
-
-			xRet = FreeRTOS_TSN_sendto( xSock, cMsg, configMIN(sizeof(cMsg), strlen(cMsg)), 0,
-					&xDestinationAddress, sizeof(xDestinationAddress) );
-			configPRINTF( ("sent %d bytes.\r\n", xRet) );
-			if(xRet < 0)
-			{
-				configPRINTF( ("sendto error %d.\r\n", xRet) );
-				for(;;);
-			}
-
+			
 			configPRINTF( ("Receiving...\r\n") );
-			xRet = FreeRTOS_TSN_recvfrom( xSock, cMsg, sizeof( cMsg ), 0, &xSourceAddress, &xSourceAddrLen );
+			xRet = FreeRTOS_TSN_recvmsg( xSock, &xMsghdr, 0 /*FREERTOS_MSG_ERRQUEUE*/ );
 			if(xRet < 0)
 			{
 				configPRINTF( ("recvfrom error %d.\r\n", xRet) );
 				for(;;);
 			}
-			configPRINTF( ("Received message \"%s\"\r\n", cMsg) );
+			configPRINTF( ("Received %d bytes\r\n", xRet ) );
 			
+			for( struct cmsghdr * cmsg = CMSG_FIRSTHDR(&xMsghdr); cmsg; cmsg = CMSG_NXTHDR(&xMsghdr, cmsg) ) {
+				// if( cmsg->cmsg_level != FREERTOS_SOL_SOCKET )
+				// 	continue;
+
+				switch( cmsg->cmsg_type ) {
+					case FREERTOS_SO_TIMESTAMPNS:
+						ts = (struct freertos_timespec*) CMSG_DATA(cmsg);
+						break;
+					case FREERTOS_SO_TIMESTAMPING:
+						ts = (struct freertos_timespec*) CMSG_DATA(cmsg);
+						break;
+					default:
+						/* Ignore other cmsg options */
+						dummy = CMSG_DATA(cmsg);
+						( void ) dummy;
+						break;
+				}
+			}
+
 			vTaskDelay( pdMS_TO_TICKS( 2000 ) );
 		}
 }

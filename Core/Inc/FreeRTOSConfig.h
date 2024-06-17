@@ -171,8 +171,8 @@ ipconfigUSE_DNS is set to 1 but a DNS server cannot be contacted. */
 
 #define configIP_ADDR0		169U
 #define configIP_ADDR1		254U
-#define configIP_ADDR2		151U
-#define configIP_ADDR3		42U
+#define configIP_ADDR2		174U
+#define configIP_ADDR3		43U
 
 /* Default gateway IP address configuration.  Used in ipconfigUSE_DNS is set to
 0, or ipconfigUSE_DNS is set to 1 but a DNS server cannot be contacted. */
