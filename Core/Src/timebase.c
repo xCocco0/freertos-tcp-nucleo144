@@ -1,20 +1,19 @@
-
 #include "peripherals.h"
 
 #include "FreeRTOS.h"
 
 #include "FreeRTOS_TSN_Timebase.h"
 
-#define SMALL_FREQ          ( 168000000UL )
-#define SMALL_FREQ_MHZ      ( 168UL )
+#define SMALL_FREQ        ( 168000000UL )
+#define SMALL_FREQ_MHZ    ( 168UL )
 
-#define BIG_FREQ            ( 1 )
+#define BIG_FREQ          ( 1 )
 
-#define NS_TO_TIM2( ns )    ( ( uint32_t ) ( ( ( ns ) * SMALL_FREQ_MHZ ) / 1000 ) )
-#define SEC_TO_TIM5( sec )  ( ( uint32_t ) ( ( sec ) * BIG_FREQ ) )
+#define NS_TO_TIM2( ns )      ( ( uint32_t ) ( ( ( ns ) * SMALL_FREQ_MHZ ) / 1000 ) )
+#define SEC_TO_TIM5( sec )    ( ( uint32_t ) ( ( sec ) * BIG_FREQ ) )
 
-#define TIM2_TO_NS( cnt )   ( ( uint32_t ) ( ( ( cnt ) * 1000 ) / SMALL_FREQ_MHZ ) )
-#define TIM5_TO_SEC( cnt )  ( ( uint32_t ) ( ( cnt ) / BIG_FREQ ) )
+#define TIM2_TO_NS( cnt )     ( ( uint32_t ) ( ( ( cnt ) * 1000 ) / SMALL_FREQ_MHZ ) )
+#define TIM5_TO_SEC( cnt )    ( ( uint32_t ) ( ( cnt ) / BIG_FREQ ) )
 
 static void prvStart( void )
 {

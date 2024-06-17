@@ -114,7 +114,7 @@ struct SStringBuf
         ucBytes : { 0, 1, 2, 3 }
     };
 #else
-    static const _U32 u32 = { 0, 1, 2, 3 };
+static const _U32 u32 = { 0, 1, 2, 3 };
 #endif
 
 static void strbuf_init( struct SStringBuf * apStr,
@@ -978,7 +978,7 @@ const char * mkSize( uint64_t aSize,
 
 const char * mkTime( unsigned aTime,
                      char * apBuf,
-                     int aLen )                             /* Argument in uS */
+                     int aLen ) /* Argument in uS */
 {
     /* Must be static because it might be returned. */
     static char mySprintfRetString[ 33 ];
