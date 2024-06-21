@@ -202,8 +202,7 @@ void vTaskTSNTest( void * argvument )
     {
         struct msghdr alignment;
         char data[ 128 ];
-    }
-    cbuf;
+    } cbuf;
     struct iovec xIovec =
     {
         .iov_base = iobuf,

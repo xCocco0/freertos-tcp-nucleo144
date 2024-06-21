@@ -64,7 +64,9 @@ NetworkEndPoint_t xEndPoints[ 2 ];
 extern void vTaskUDPSendIPv4( void * argument );
 extern void vTaskUDPSendIPv6( void * argument );
 extern void vTaskTCPSendIPv4( void * argument );
-extern void vTaskTSNTest( void * argvument );
+extern void vTaskTSNTest( void * argument );
+extern void vTaskSyncMaster( void * argument );
+extern void vTaskSyncSlave( void * argument );
 
 /**
  * @brief  The application entry point.
@@ -145,7 +147,10 @@ int main( void )
     /*xRet = xTaskCreate(vTaskUDPSendIPv4, "UDPSendIPv4", 1024, NULL, tskIDLE_PRIORITY+1, NULL); */
     /*xRet = xTaskCreate(vTaskUDPSendIPv6, "UDPSendIPv6", 1024, NULL, tskIDLE_PRIORITY+1, NULL); */
     /*xRet = xTaskCreate(vTaskTCPSendIPv4, "TCPSendIPv4", 1024, NULL, tskIDLE_PRIORITY+1, NULL); */
-    xRet = xTaskCreate( vTaskTSNTest, "TSNTest", 1024, NULL, tskIDLE_PRIORITY + 1, NULL );
+    /*xRet = xTaskCreate( vTaskTSNTest, "TSNTest", 1024, NULL, tskIDLE_PRIORITY + 1, NULL ); */
+
+    //xRet = xTaskCreate( vTaskSyncMaster, "Master", 1024, NULL, tskIDLE_PRIORITY + 1, NULL );
+    xRet = xTaskCreate( vTaskSyncSlave, "Slave", 1024, NULL, tskIDLE_PRIORITY + 1, NULL );
 
     vTaskStartScheduler();
 
