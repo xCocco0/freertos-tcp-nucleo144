@@ -18,7 +18,10 @@
 #define ipconfigUSE_DHCP                               ipconfigDISABLE
 #define ipconfigIPv4_BACKWARD_COMPATIBLE               ipconfigENABLE
 
+#define arpGRATUITOUS_ARP_PERIOD                       ( 0xffff )
+
 #define ipconfigUSE_RMII                               ipconfigENABLE
+#define ipconfig
 
 #define ipconfigREPLY_TO_INCOMING_PINGS                ipconfigENABLE
 

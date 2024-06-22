@@ -8,7 +8,7 @@
 #include "printf_stdarg.h"
 
 #define LOGGER_BUF_LEN           4096U
-#define LOGGER_TASK_PRIORITY     tskIDLE_PRIORITY + 1
+#define LOGGER_TASK_PRIORITY     tskIDLE_PRIORITY + 2
 #define LOGGER_STACK_SIZE        LOGGER_BUF_LEN / 4 + 16
 
 #define PRINTER_TICKS_TO_WAIT    ( TickType_t ) 10U
