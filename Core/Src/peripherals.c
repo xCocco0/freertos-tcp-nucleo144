@@ -1,3 +1,11 @@
+/**
+ * @file peripherals.c
+ * @brief This file contains the implementation of peripheral initialization functions.
+ */
+
+#include "peripherals.h"
+
+// Rest of the code...
 #include "peripherals.h"
 
 UART_HandleTypeDef huart2;
@@ -110,6 +118,8 @@ void MX_USART3_UART_Init( void )
     /* USER CODE END USART3_Init 2 */
 }
 
+/// @brief USART2 Initialization Function
+/// @param  None
 void MX_USART2_UART_Init( void )
 {
     huart2.Instance = USART2;
@@ -270,6 +280,8 @@ void MX_RNG_Init( void )
     /* USER CODE END RNG_Init 2 */
 }
 
+/// @brief CRC Initialization Function
+/// @param  None
 void MX_CRC_Init( void )
 {
     /* USER CODE BEGIN CRC_Init 0 */

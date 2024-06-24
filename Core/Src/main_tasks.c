@@ -1,3 +1,8 @@
+/**
+ * @file main_tasks.c
+ * @brief This file contains the implementation of various tasks used in the application.
+ */
+
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "string.h"
@@ -28,10 +33,20 @@
 #define SRC_PORT      10000
 
 
+/// @brief Task to test TSN
+/// @param argvument 
 void vTaskTSNTest( void * argvument );
+/// @brief Task to send UDP packets using IPv4
+/// @param argument 
 void vTaskUDPSendIPv4( void * argument );
+/// @brief Task to send UDP packets using IPv6
+/// @param argument 
 void vTaskUDPSendIPv6( void * argument );
+/// @brief Task to send TCP packets using IPv4
+/// @param argument 
 void vTaskTCPSendIPv4( void * argument );
+/// @brief Task to send TCP packets using IPv6
+/// @param argument 
 void vTaskTCPSendIPv6( void * argument );
 
 const uint8_t xUDP_IPv4_test[] =
@@ -72,6 +87,9 @@ const uint8_t xUDP_IPv4_test[] =
     0x61,           0x61,0x61, 0x61, 0x61 /*udp payload */
 };
 
+/// @brief Fake receive frame
+/// @param pxBuf 
+/// @param uxSize 
 void prvFakeReceiveFrame( const uint8_t * pxBuf,
                           size_t uxSize )
 {

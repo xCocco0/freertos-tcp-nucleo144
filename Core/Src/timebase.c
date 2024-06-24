@@ -1,7 +1,5 @@
 #include "peripherals.h"
-
 #include "FreeRTOS.h"
-
 #include "FreeRTOS_TSN_Timebase.h"
 
 #define SMALL_FREQ        ( 168000000UL )
@@ -15,6 +13,9 @@
 #define TIM2_TO_NS( cnt )     ( ( uint32_t ) ( ( ( cnt ) * 1000 ) / SMALL_FREQ_MHZ ) )
 #define TIM5_TO_SEC( cnt )    ( ( uint32_t ) ( ( cnt ) / BIG_FREQ ) )
 
+/**
+ * @brief Starts the timebase.
+ */
 static void prvStart( void )
 {
     portENTER_CRITICAL();
@@ -23,6 +24,9 @@ static void prvStart( void )
     portEXIT_CRITICAL();
 }
 
+/**
+ * @brief Stops the timebase.
+ */
 static void prvStop( void )
 {
     portENTER_CRITICAL();
@@ -31,6 +35,11 @@ static void prvStop( void )
     portEXIT_CRITICAL();
 }
 
+/**
+ * @brief Sets the time of the timebase.
+ * 
+ * @param ts Pointer to a freertos_timespec structure containing the time to set.
+ */
 static void prvSetTime( const struct freertos_timespec * ts )
 {
     prvStop();
@@ -41,6 +50,11 @@ static void prvSetTime( const struct freertos_timespec * ts )
     prvStart();
 }
 
+/**
+ * @brief Gets the current time of the timebase.
+ * 
+ * @param ts Pointer to a freertos_timespec structure to store the current time.
+ */
 static void prvGetTime( struct freertos_timespec * ts )
 {
     portENTER_CRITICAL();
@@ -49,6 +63,9 @@ static void prvGetTime( struct freertos_timespec * ts )
     portEXIT_CRITICAL();
 }
 
+/**
+ * @brief Initializes the timebase.
+ */
 void vTimebaseInit( void )
 {
     TimebaseHandle_t xTb;
