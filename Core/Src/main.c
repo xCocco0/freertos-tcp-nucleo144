@@ -81,7 +81,6 @@ extern void vTaskTCPSendIPv4( void * argument );
 extern void vTaskTSNTest( void * argument );
 extern void vTaskSyncMaster( void * argument );
 extern void vTaskSyncSlave( void * argument );
-extern void vTaskLED( void * argument );
 
 /**
  * @brief  The application entry point.
@@ -169,7 +168,6 @@ int main( void )
 	#else
 		xRet = xTaskCreate( vTaskSyncSlave, "Slave", 1024, NULL, tskIDLE_PRIORITY + 1, NULL );
 	#endif
-	xRet = xTaskCreate( vTaskLED, "LED", 64, NULL, configMAX_PRIORITIES - 1, &xTaskLEDHandle );
 
     vTaskStartScheduler();
 
@@ -195,6 +193,15 @@ void vTIM2_Callback( void )
     if( xTaskGetSchedulerState() != taskSCHEDULER_NOT_STARTED )
     {
         //vLoggerPrintFromISR( ( "[TIM2] Tac\r\n" ) );
+	    if( __HAL_TIM_GET_COUNTER( &htim5 ) % 3 )
+		{
+			HAL_GPIO_WritePin( LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET );
+		}
+		else
+		{
+			HAL_GPIO_WritePin( LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET );
+		}
+
     }
 }
 
@@ -202,8 +209,8 @@ void vTIM5_Callback( void )
 {
     if( xTaskGetSchedulerState() != taskSCHEDULER_NOT_STARTED )
     {
-		HAL_GPIO_WritePin( LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET );
-		vTaskNotifyGiveFromISR( xTaskLEDHandle, NULL );
-        vLoggerPrintFromISR( ( "[TIM5] Tic\r\n" ) );
+        //HAL_GPIO_WritePin( LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET );
+        //vTaskNotifyGiveFromISR( xTaskLEDHandle, NULL );
+		vLoggerPrintFromISR( ( "[TIM5] Tic\r\n" ) );
     }
 }
