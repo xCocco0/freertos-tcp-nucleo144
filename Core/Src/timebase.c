@@ -23,7 +23,7 @@ static void prvStart( void )
 
 static void prvStop( void )
 {
-	/* Stopping TIM2 is enough */
+    /* Stopping TIM2 is enough */
     HAL_TIM_Base_Stop_IT( &htim2 );
     HAL_TIM_Base_Start_IT( &htim5 );
 }
@@ -40,14 +40,15 @@ static void prvSetTime( const struct freertos_timespec * ts )
 
 static void prvGetTime( struct freertos_timespec * ts )
 {
-	uint32_t temp;
-	do
-	{
-	    temp = TIM5_TO_SEC( __HAL_TIM_GET_COUNTER( &htim5 ) );        //2.9
-	    ts->tv_nsec = TIM2_TO_NS( __HAL_TIM_GET_COUNTER( &htim2 ) );  //3.1
-		ts->tv_sec = TIM5_TO_SEC( __HAL_TIM_GET_COUNTER( &htim5 ) );  //3.2
-	}
-	while( temp != ts->tv_sec );
+    uint32_t temp;
+
+    do
+    {
+        temp = TIM5_TO_SEC( __HAL_TIM_GET_COUNTER( &htim5 ) );       /*2.9 */
+        ts->tv_nsec = TIM2_TO_NS( __HAL_TIM_GET_COUNTER( &htim2 ) ); /*3.1 */
+        ts->tv_sec = TIM5_TO_SEC( __HAL_TIM_GET_COUNTER( &htim5 ) ); /*3.2 */
+    }
+    while( temp != ts->tv_sec );
 }
 
 void vTimebaseInit( void )

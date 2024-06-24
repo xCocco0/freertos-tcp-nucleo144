@@ -42,10 +42,10 @@ void vNetworkQueueInit( void )
 
     NetworkNode_t * prio, * fifo, * cbs, * fifoHP;
 
-	/*
-    cbs = pxNetworkNodeCreateCBS( 12 * 8, 12 * 2 * 8 );
-    ( void ) xNetworkSchedulerLinkQueue( cbs, queue1 );
-	*/
+    /*
+     * cbs = pxNetworkNodeCreateCBS( 12 * 8, 12 * 2 * 8 );
+     * ( void ) xNetworkSchedulerLinkQueue( cbs, queue1 );
+     */
 
     fifoHP = pxNetworkNodeCreateFIFO();
     ( void ) xNetworkSchedulerLinkQueue( fifoHP, queue1 );

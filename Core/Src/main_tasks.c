@@ -202,7 +202,8 @@ void vTaskTSNTest( void * argvument )
     {
         struct msghdr alignment;
         char data[ 128 ];
-    } cbuf;
+    }
+    cbuf;
     struct iovec xIovec =
     {
         .iov_base = iobuf,
@@ -218,7 +219,7 @@ void vTaskTSNTest( void * argvument )
         .msg_controllen = sizeof( cbuf ),
     };
 
-    void * dummy;     /* for debugging */
+    void * dummy; /* for debugging */
 
     sprintf( cMsg, "Hello world n.%d", 0 );
     configPRINTF( ( "Sending message \"%s\"...", cMsg ) );
