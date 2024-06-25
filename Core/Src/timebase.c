@@ -15,6 +15,9 @@
 
 /**
  * @brief Starts the timebase.
+ * 
+ * This function starts the timebase by calling the HAL_TIM_Base_Start_IT() function for both htim2 and htim5.
+ * It is called internally by vTimebaseInit().
  */
 static void prvStart( void )
 {
@@ -26,6 +29,9 @@ static void prvStart( void )
 
 /**
  * @brief Stops the timebase.
+ * 
+ * This function stops the timebase by calling the HAL_TIM_Base_Stop_IT() function for both htim2 and htim5.
+ * It is called internally by vTimebaseInit().
  */
 static void prvStop( void )
 {
@@ -39,6 +45,9 @@ static void prvStop( void )
  * @brief Sets the time of the timebase.
  * 
  * @param ts Pointer to a freertos_timespec structure containing the time to set.
+ * 
+ * This function sets the time of the timebase by updating the counters of htim2 and htim5.
+ * It is called internally by vTimebaseInit().
  */
 static void prvSetTime( const struct freertos_timespec * ts )
 {
@@ -54,6 +63,9 @@ static void prvSetTime( const struct freertos_timespec * ts )
  * @brief Gets the current time of the timebase.
  * 
  * @param ts Pointer to a freertos_timespec structure to store the current time.
+ * 
+ * This function retrieves the current time of the timebase by reading the counters of htim2 and htim5.
+ * It is called internally by vTimebaseInit().
  */
 static void prvGetTime( struct freertos_timespec * ts )
 {
@@ -65,6 +77,9 @@ static void prvGetTime( struct freertos_timespec * ts )
 
 /**
  * @brief Initializes the timebase.
+ * 
+ * This function initializes the timebase by setting the function pointers of xTb to the corresponding functions.
+ * It also calls xTimebaseHandleSet() to set the timebase handle and vTimebaseStart() to start the timebase.
  */
 void vTimebaseInit( void )
 {

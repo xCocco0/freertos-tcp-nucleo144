@@ -41,34 +41,48 @@
 /// @param pxAddr Pointer to the address structure.
 void vPing( struct freertos_sockaddr * const pxAddr )
 {
+	/// Create a socket for sending and receiving ping messages.
 	Socket_t xSocket = FreeRTOS_socket( FREERTOS_AF_INET4, FREERTOS_SOCK_DGRAM, FREERTOS_IPPROTO_UDP );
 
+	/// Check if the socket was created successfully.
 	struct freertos_sockaddr xSourceAddr, xDestinationAddr = *pxAddr;
+	/// Set the source and destination addresses for the ping message.
 	xSourceAddr.sin_port = FreeRTOS_htons( PORT_PING );
+	/// Set the source address based on the destination address.
 	xSourceAddr.sin_family = FREERTOS_AF_INET4;
+	/// If the destination address is the master device, set the source address to the slave device.
 	if( pxAddr->sin_addr == FreeRTOS_inet_addr( MASTER_IP ) )
 	{
 		xSourceAddr.sin_addr = FreeRTOS_inet_addr( SLAVE_IP );
 	}
+	/// If the destination address is the slave device, set the source address to the master device.
 	else
 	{
 		xSourceAddr.sin_addr = FreeRTOS_inet_addr( MASTER_IP );
 	}
+	/// Set the destination address for the ping message.
 	xDestinationAddr.sin_port = FreeRTOS_htons( PORT_PING );
 
+	/// Bind the socket to the source address.
 	FreeRTOS_bind( xSocket, &xSourceAddr, sizeof( xSourceAddr ) );
 
+	/// Set a timeout for sending the ping message.
 	TickType_t xTimeout = pdMS_TO_TICKS( 10000 );
-	FreeRTOS_setsockopt( xSocket, 0, FREERTOS_SO_SNDTIMEO, &xTimeout, sizeof( xTimeout ) );
+	/// Set the timeout option for the socket.
+	FreeRTOS_setsockopt( xSocket, 0, FREERTOS_SO_SNDTIMEO, &xTimeout, sizeof( xTimeout ) );	
 	char cMsg[] = "hello";
+	/// Send the ping message to the destination address.
 	BaseType_t xRet = FreeRTOS_sendto( xSocket, cMsg, sizeof( cMsg ), 0, &xDestinationAddr, sizeof( xDestinationAddr ) );
 	configPRINTF(("Ping request\r\n"));
 
 	vTaskDelay(1000);
+	/// Send the ping message to the destination address.
 	xRet = FreeRTOS_sendto( xSocket, cMsg, sizeof( cMsg ), 0, &xDestinationAddr, sizeof( xDestinationAddr ) );
 	vTaskDelay(1000);
+	/// Send the ping message to the destination address.
 	xRet = FreeRTOS_sendto( xSocket, cMsg, sizeof( cMsg ), 0, &xDestinationAddr, sizeof( xDestinationAddr ) );
 
+	/// Receive the ping reply from the destination address.
 	xRet = FreeRTOS_recvfrom( xSocket, cMsg, sizeof( cMsg ), 0, NULL, NULL );
 	configPRINTF(("Ping received reply\r\n"));
 
@@ -81,10 +95,13 @@ void vTaskSyncMaster( void * pvArgument )
 {
 	configPRINTF(("Hey I am the master\r\n" ));
 
+	/// Create a socket for sending and receiving synchronization messages.
 	TSNSocket_t xSocket = FreeRTOS_TSN_socket( FREERTOS_AF_INET4, FREERTOS_SOCK_DGRAM, FREERTOS_IPPROTO_UDP );
+	/// Check if the socket was created successfully.
 	HANDLE_ERROR(
 	xSocket, xSocket == NULL || xSocket == FREERTOS_TSN_INVALID_SOCKET );
 
+	/// Set the timestamping options for the socket.
 	BaseType_t xRet;
 	uint32_t ulOpt = SOF_TIMESTAMPING_TX_SOFTWARE | SOF_TIMESTAMPING_RX_SOFTWARE | SOF_TIMESTAMPING_SOFTWARE;
 	xRet = FreeRTOS_TSN_setsockopt( xSocket, FREERTOS_SOL_SOCKET, FREERTOS_SO_TIMESTAMPING, &ulOpt, sizeof( ulOpt ) );
@@ -92,6 +109,7 @@ void vTaskSyncMaster( void * pvArgument )
 	
 	char cMsg[ 32 ];
 
+	/// Set the source and destination addresses for the synchronization messages.
 	struct freertos_sockaddr xSlaveAddr, xMasterAddr, xSourceAddr;
 	xMasterAddr.sin_port = FreeRTOS_htons( PORT );
 	xMasterAddr.sin_addr = FreeRTOS_inet_addr( MASTER_IP );
@@ -142,6 +160,7 @@ void vTaskSyncMaster( void * pvArgument )
     };
 	struct freertos_timespec ts[3];
 	
+	/// Receive the follow-up message from the slave device.
 	do
 	{
 		xRet = FreeRTOS_TSN_recvmsg( xSocket, &xMsghdr, FREERTOS_MSG_ERRQUEUE );
@@ -149,12 +168,14 @@ void vTaskSyncMaster( void * pvArgument )
 
 		configPRINTF(( "Received ancillary with ret %d\r\n", xRet ));
 
+		/// If the message is not received, wait for 500 ms and try again.
 		if( xRet == -pdFREERTOS_ERRNO_EWOULDBLOCK )
 		{
 			vTaskDelay( 500 );
 			continue;
 		}
 
+		/// Extract the timestamp from the message.
 		for( struct cmsghdr * cmsg = CMSG_FIRSTHDR( &xMsghdr ); cmsg; cmsg = CMSG_NXTHDR( &xMsghdr, cmsg ) )
 		{
 			if( cmsg->cmsg_level != FREERTOS_SOL_SOCKET )
@@ -175,12 +196,14 @@ void vTaskSyncMaster( void * pvArgument )
 	while( 0 );
 
 	configPRINTF(( "Sending follow-up\r\n" ) );
-
+	
+	/// Send the follow-up message to the slave device.
 	sprintf( cMsg, "Followup %lu,%lu", ts[0].tv_sec, ts[0].tv_nsec );
 	xRet = FreeRTOS_TSN_sendto( xSocket, cMsg, sizeof( cMsg ), 0, &xSlaveAddr, sizeof( xSlaveAddr ) );
 	HANDLE_ERROR( xRet, xRet < 0 );
 
 	while( 1 )
+	/// Receive the delay request message from the slave device.
 	{
 		xMsghdr.msg_namelen = sizeof( xSourceAddr );
 		xMsghdr.msg_iovlen = 1;
@@ -214,7 +237,7 @@ void vTaskSyncMaster( void * pvArgument )
 		}
 	} 
 
-	
+	/// Send the delay response message to the slave device.
 	configPRINTF(( "Sending delay resp\r\n"));
 	sprintf( cMsg, "Delayresp %lu,%lu", ts[0].tv_sec, ts[0].tv_nsec );
 	xRet = FreeRTOS_TSN_sendto( xSocket, cMsg, sizeof( cMsg ), 0, &xSlaveAddr, sizeof( xSlaveAddr ) );
@@ -229,9 +252,11 @@ void vTaskSyncSlave( void * pvArgument )
 {
 	configPRINTF(("Hello there, I am the slave\r\n" ));
 
+	/// Create a socket for sending and receiving synchronization messages.
 	TSNSocket_t xSocket = FreeRTOS_TSN_socket( FREERTOS_AF_INET4, FREERTOS_SOCK_DGRAM, FREERTOS_IPPROTO_UDP );
 	HANDLE_ERROR( xSocket, xSocket == NULL || xSocket == FREERTOS_TSN_INVALID_SOCKET );
 
+	/// Set the timestamping options for the socket.
 	BaseType_t xRet;
 	uint32_t ulOpt = SOF_TIMESTAMPING_TX_SOFTWARE | SOF_TIMESTAMPING_RX_SOFTWARE | SOF_TIMESTAMPING_SOFTWARE;
 	xRet = FreeRTOS_TSN_setsockopt( xSocket, FREERTOS_SOL_SOCKET, FREERTOS_SO_TIMESTAMPING, &ulOpt, sizeof( ulOpt ) );
@@ -239,6 +264,7 @@ void vTaskSyncSlave( void * pvArgument )
 	
 	char cMsg[ 32 ];
 
+	/// Set the source and destination addresses for the synchronization messages.
 	struct freertos_sockaddr xSlaveAddr, xMasterAddr, xSourceAddr;
 	uint32_t uxSourceAddrLen;
 	xMasterAddr.sin_port = FreeRTOS_htons( PORT );
@@ -260,8 +286,14 @@ void vTaskSyncSlave( void * pvArgument )
 	xRet = FreeRTOS_TSN_bind( xSocket, &xSlaveAddr, sizeof( xSlaveAddr ) );
 	HANDLE_ERROR( xRet, xRet != 0 );
 
+	/* 
+	* Send a ping to the master device to establish a connection.
+	*/
 	vPing( &xMasterAddr );
 
+	/*
+	* Receive sync message from the master device.
+	*/
     char iobuf[ 128 ];
     union
     {
@@ -291,11 +323,13 @@ void vTaskSyncSlave( void * pvArgument )
 		xMsghdr.msg_controllen = sizeof( cbuf );
 		xIovec.iov_len = sizeof( iobuf );
 
+		/// Receive the sync message from the master device.
 		xRet = FreeRTOS_TSN_recvmsg( xSocket, &xMsghdr, 0 );
 		HANDLE_ERROR( xRet, xRet < 0 );
 
 		configPRINTF(( "Received %s\r\n", iobuf ));
 
+		/// If the sync message is received, extract the timestamp from the message.
 		if( strncmp( iobuf, "Sync", 4) == 0 )
 		{
 			for( struct cmsghdr * cmsg = CMSG_FIRSTHDR( &xMsghdr ); cmsg; cmsg = CMSG_NXTHDR( &xMsghdr, cmsg ) )

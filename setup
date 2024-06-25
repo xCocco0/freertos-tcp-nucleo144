@@ -1,5 +1,21 @@
 #!/bin/sh
 
+# This script provides a set of commands to flash firmware, reset the board, and start a GDB server or attach to it.
+# Usage: setup <flash|reset|gdb>
+# Usage for GDB: setup gdb <server|attach>
+# 
+# Available commands:
+# - flash [file]: flash the firmware to the board
+# - reset: reset the board to its initial state
+# - gdb server: start the GDB server
+# - gdb attach: attach to a local GDB server
+#
+# Example usage:
+# - setup flash firmware.bin: flash the firmware.bin file to the board
+# - setup reset: reset the board
+# - setup gdb server: start the GDB server
+# - setup gdb attach: attach to a local GDB server
+
 TARGET="./build/test.bin"
 
 USAGE=\

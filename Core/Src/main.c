@@ -33,6 +33,7 @@
 
 /* Private variables ---------------------------------------------------------*/
 
+/// @brief IP configuration
 const uint8_t ucIPAddress[ ipIP_ADDRESS_LENGTH_BYTES ] =
 {
 	configIP_ADDR0, configIP_ADDR1, configIP_ADDR2,
@@ -42,18 +43,22 @@ const uint8_t ucIPAddress[ ipIP_ADDRESS_LENGTH_BYTES ] =
 	configIP_ADDR3+1
 #endif
 };
+/// @brief Netmask configuration
 const uint8_t ucNetMask[ ipIP_ADDRESS_LENGTH_BYTES ] =
 {
 	configNET_MASK0, configNET_MASK1, configNET_MASK2, configNET_MASK3
 };
+/// @brief Gateway configuration
 const uint8_t ucGatewayAddress[ ipIP_ADDRESS_LENGTH_BYTES ] =
 {
 	configGATEWAY_ADDR0, configGATEWAY_ADDR1, configGATEWAY_ADDR2, configGATEWAY_ADDR3
 };
+/// @brief DNS server configuration
 const uint8_t ucDNSServerAddress[ ipIP_ADDRESS_LENGTH_BYTES ] =
 {
 	configDNS_SERVER_ADDR0, configDNS_SERVER_ADDR1, configDNS_SERVER_ADDR2, configDNS_SERVER_ADDR3
 };
+/// @brief MAC address configuration
 const uint8_t ucMACAddress[ ipMAC_ADDRESS_LENGTH_BYTES ] =
 {
 	configMAC_ADDR0, configMAC_ADDR1, configMAC_ADDR2,
@@ -83,10 +88,11 @@ extern void vTaskTSNTest( void * argument );
 extern void vTaskSyncMaster( void * argument );
 extern void vTaskSyncSlave( void * argument );
 
-/**
- * @brief  The application entry point.
- * @retval int
- */
+
+/// @brief The application entry point.
+/// @param  None
+/// @return None
+
 int main( void )
 {
     /* MCU Configuration--------------------------------------------------------*/
@@ -107,8 +113,10 @@ int main( void )
     MX_TIM2_Init();
     MX_TIM5_Init();
 
+    /* Initialize the logger */
     vLoggerInit();
 
+    /* Print the start message */
     configPRINTF( ( "\n\n\n\r#---------- Starting execution ----------#\r\n" ) );
     #if defined( __DATE__ ) && defined( __TIME__ ) && defined( DEBUG )
         configPRINTF( ( "# %-38s #\r\n", "Compiled: "__DATE__ " "__TIME__ ) );
