@@ -79,6 +79,7 @@ extern void vTaskUDPSendIPv4( void * argument );
 extern void vTaskUDPSendIPv6( void * argument );
 extern void vTaskTCPSendIPv4( void * argument );
 extern void vTaskTSNTest( void * argument );
+extern void vTaskTSNTestCBS( void * argument );
 extern void vTaskSyncMaster( void * argument );
 extern void vTaskSyncSlave( void * argument );
 
@@ -118,9 +119,15 @@ int main( void )
 
     configPRINTF( ( "Setting up network interface...\r\n" ) );
     pxTSN_FillInterfaceDescriptor( 0, &( xInterfaces[ 0 ] ), &( xInterfaceConfigs[ 0 ] ) );
-    /*xInterfaceConfigs[ 0 ].xNumTags = 2; */
-    /*xInterfaceConfigs[ 0 ].usVLANTag = 0x3311; */
-    /*xInterfaceConfigs[ 0 ].usServiceVLANTag = 0x9955; */
+
+    xInterfaceConfigs[ 0 ].xNumTags = 0; 
+	#if 1
+		xInterfaceConfigs[ 0 ].xNumTags = 2; 
+		xInterfaceConfigs[ 0 ].usVLANTag = 0;
+		xInterfaceConfigs[ 0 ].usServiceVLANTag = 0; 
+		vlantagSET_PCP_FROM_TCI( xInterfaceConfigs[ 0 ].usVLANTag, vlantagCLASS_7 );
+		vlantagSET_PCP_FROM_TCI( xInterfaceConfigs[ 0 ].usServiceVLANTag, vlantagCLASS_0 );
+	#endif
 
     FreeRTOS_FillEndPoint(
         &( xInterfaces[ 0 ] ), &( xEndPoints[ 0 ] ), ucIPAddress,
@@ -162,12 +169,15 @@ int main( void )
     /*xRet = xTaskCreate(vTaskUDPSendIPv6, "UDPSendIPv6", 1024, NULL, tskIDLE_PRIORITY+1, NULL); */
     /*xRet = xTaskCreate(vTaskTCPSendIPv4, "TCPSendIPv4", 1024, NULL, tskIDLE_PRIORITY+1, NULL); */
     /*xRet = xTaskCreate( vTaskTSNTest, "TSNTest", 1024, NULL, tskIDLE_PRIORITY + 1, NULL ); */
+    xRet = xTaskCreate( vTaskTSNTestCBS, "TSNTestCBS", 1024, NULL, tskIDLE_PRIORITY + 1, NULL );
 
-    #if ( mainIS_MASTER == 1 )
-        xRet = xTaskCreate( vTaskSyncMaster, "Master", 1024, NULL, tskIDLE_PRIORITY + 1, NULL );
-    #else
-        xRet = xTaskCreate( vTaskSyncSlave, "Slave", 1024, NULL, tskIDLE_PRIORITY + 1, NULL );
-    #endif
+	#if 0
+		#if ( mainIS_MASTER == 1 )
+			xRet = xTaskCreate( vTaskSyncMaster, "Master", 1024, NULL, tskIDLE_PRIORITY + 1, NULL );
+		#else
+			xRet = xTaskCreate( vTaskSyncSlave, "Slave", 1024, NULL, tskIDLE_PRIORITY + 1, NULL );
+		#endif
+	#endif
 
     vTaskStartScheduler();
 
