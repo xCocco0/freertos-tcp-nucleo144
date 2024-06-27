@@ -116,7 +116,6 @@ void vTaskUDPSendIPv6(void *argument)
 		struct freertos_sockaddr xDestinationAddress;
 		FreeRTOS_inet_pton6( DST_ADDR_6, &xDestinationAddress.sin_address.xIP_IPv6.ucBytes);
 		xDestinationAddress.sin_port = FreeRTOS_htons(DST_PORT);
-		//xDestinationAddress.sin_family = FREERTOS_EF_INET6;
 
 		char cMsg[32];
 
@@ -179,7 +178,7 @@ void vTaskTCPSendIPv4(void *argument)
 		struct freertos_sockaddr xDestinationAddress;
 		xDestinationAddress.sin_addr = FreeRTOS_inet_addr(DST_ADDR_4);
 		xDestinationAddress.sin_port = FreeRTOS_htons(DST_PORT);
-		xDestinationAddress.sin_family = FREERTOS_AF_INET4; //FREERTOS_AFxy_INET(4,3);
+		xDestinationAddress.sin_family = FREERTOS_AF_INET4; 
 
 		/* -- connect socket -- */
 		configPRINTF( ("Connecting socket...\r\n") );
@@ -206,76 +205,3 @@ void vTaskTCPSendIPv4(void *argument)
 		}
 	}
 }
-
-#if 0
-void task_(void *argument)
-{
-	BaseType_t xRet;
-
-	configPRINTF( ("Running StartDefaultTask function\r\n") );
-	for(;;) {
-
-		configPRINTF( ("Creating socket...\r\n") );
-		Socket_t xSock = FreeRTOS_socket(FREERTOS_AF_INET4,
-				//FREERTOS_SOCK_STREAM, 
-				//FREERTOS_IPPROTO_TCP);
-				 FREERTOS_SOCK_DGRAM, 
-				 FREERTOS_IPPROTO_UDP);
-		if(xSock == FREERTOS_INVALID_SOCKET) {
-			HAL_GPIO_TogglePin(GPIOB, LD2_Pin);
-			configPRINTF( ("Socket error\r\n") );
-			for(;;);
-		}
-		configPRINTF( ("Done!\r\n") );
-
-		struct freertos_sockaddr xSourceAddress;
-		//xSourceAddress.sin_addr = FreeRTOS_inet_addr_quick( ucIPAddress[ 0 ], ucIPAddress[ 1 ], ucIPAddress[ 2 ], ucIPAddress[ 3 ] );
-		xSourceAddress.sin_port = FreeRTOS_htons(SRC_PORT);
-		xSourceAddress.sin_family = FREERTOS_AF_INET4;
-
-		socklen_t xSize = sizeof(struct freertos_sockaddr);
-		configPRINTF( ("Binding socket...\r\n") );
-		xRet = FreeRTOS_bind(xSock, /*&xSourceAddress*/ NULL, xSize);
-		if(xRet) {
-			configPRINTF( ("Socket could not be bound: error %d\r\n", xRet) );
-			for(;;);
-		}
-		configPRINTF( ("Done!\r\n") );
-
-		struct freertos_sockaddr xDestinationAddress;
-		xDestinationAddress.sin_addr = FreeRTOS_inet_addr(DST_ADDR_4);
-		//xDestinationAddress.sin_addr = FreeRTOS_inet_addr("192.168.56.1");
-		//xDestinationAddress.sin_addr = FreeRTOS_inet_addr("255.255.255.255");
-		xDestinationAddress.sin_port = FreeRTOS_htons(DST_PORT);
-		xDestinationAddress.sin_family = FREERTOS_AFxy_INET(4,3);
-
-		/*
-		   configPRINTF( ("Connecting socket...\r\n") );
-		   xRet = FreeRTOS_connect(xSock, &xDestinationAddress, xSize);
-		   if(xRet) {
-		   configPRINTF( ("Socket could not be connected: error %d\r\n", xRet) );
-		   for(;;);
-		   }
-		   configPRINTF( ("Done!\r\n") );
-		   */
-		char cMsg[32];
-
-		for(int i = 0; ; ++i) {
-			sprintf(cMsg, "Hello world n.%d", i);
-			configPRINTF( ("Sending message \"%s\"...", cMsg) );
-
-			xRet = FreeRTOS_sendto(xSock, cMsg, configMIN(sizeof(cMsg), strlen(cMsg)), 0,
-					&xDestinationAddress, sizeof(xDestinationAddress)
-					);
-			/*
-			   xRet = FreeRTOS_send(xSock, cMsg, configMIN(sizeof(cMsg), strlen(cMsg)), 0);
-			   */
-			configPRINTF( ("sent %d bytes.\r\n", xRet) );
-			configASSERT(xRet >= 0);
-			HAL_GPIO_TogglePin(GPIOB, LD3_Pin);
-			vTaskDelay(1000UL);
-			//vTaskDelay(1000UL / portTICK_PERIOD_MS);
-		}
-	}
-}
-#endif
