@@ -25,13 +25,18 @@
 #include "FreeRTOS_TSN_Timestamp.h"
 #include "FreeRTOS_TSN_Timebase.h"
 
+#define xstr(x) str(x)
+#define str(x) #x
+#define GLUE_IP(x1,x2,x3,x4) "" xstr(x1) "." xstr(x2) "." xstr(x3) "." xstr(x4) ""
 
 #define PORT               10001
-#define PORT_PING          10002
-#define MASTER_IP          "169.254.151.43"
-#define SLAVE_IP           "169.254.151.44"
-#define MASTER_MAC         { 0x00, 0x80, 0xE1, 0x00, 0x00, 0x01 }
-#define SLAVE_MAC          { 0x00, 0x80, 0xE1, 0x00, 0x00, 0x02 }
+#define MASTER_IP          GLUE_IP(configIP_ADDR0, configIP_ADDR1, configIP_ADDR2, configIP_ADDR3)
+#define SLAVE_IP           GLUE_IP(configIP_ADDR0, configIP_ADDR1, configIP_ADDR2, configIP_ADDR3 + 1)
+#define MASTER_MAC         { configMAC_ADDR0, configMAC_ADDR1, configMAC_ADDR2, \
+                           configMAC_ADDR3, configMAC_ADDR4, configMAC_ADDR5 }
+#define SLAVE_MAC         { configMAC_ADDR0, configMAC_ADDR1, configMAC_ADDR2, \
+                           configMAC_ADDR3, configMAC_ADDR4, configMAC_ADDR5 + 1 }
+
 #define DELAY_ON_ERR_MS    ( 1000 )
 
 
@@ -46,6 +51,7 @@
 /* Private function definitions */
 
 #if 0
+#define PORT_PING          10002
     static void vPing( struct freertos_sockaddr * const pxAddr )
     {
         Socket_t xSocket = FreeRTOS_socket( FREERTOS_AF_INET4, FREERTOS_SOCK_DGRAM, FREERTOS_IPPROTO_UDP );
