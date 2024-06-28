@@ -1,7 +1,5 @@
 #include "peripherals.h"
-
 #include "FreeRTOS.h"
-
 #include "FreeRTOS_TSN_Timebase.h"
 
 #define SMALL_FREQ        ( 168000000UL )
@@ -14,15 +12,26 @@
 
 #define TIM2_TO_NS( cnt )     ( ( uint32_t ) ( ( cnt ) * ( ( double ) 1000 / SMALL_FREQ_MHZ ) ) )
 #define TIM5_TO_SEC( cnt )    ( ( uint32_t ) ( ( cnt ) / BIG_FREQ ) )
-
 #define TIM2_PERIOD_TICKS    ( 168000000UL )
 
+/**
+ * @brief Starts the timebase.
+ * 
+ * This function starts the timebase by calling the HAL_TIM_Base_Start_IT() function for both htim2 and htim5.
+ * It is called internally by vTimebaseInit().
+ */
 static void prvStart( void )
 {
     HAL_TIM_Base_Start_IT( &htim5 );
     HAL_TIM_Base_Start_IT( &htim2 );
 }
 
+/**
+ * @brief Stops the timebase.
+ * 
+ * This function stops the timebase by calling the HAL_TIM_Base_Stop_IT() function for both htim2 and htim5.
+ * It is called internally by vTimebaseInit().
+ */
 static void prvStop( void )
 {
     /* Stopping TIM2 is enough */
@@ -30,6 +39,14 @@ static void prvStop( void )
     HAL_TIM_Base_Start_IT( &htim5 );
 }
 
+/**
+ * @brief Sets the time of the timebase.
+ * 
+ * @param ts Pointer to a freertos_timespec structure containing the time to set.
+ * 
+ * This function sets the time of the timebase by updating the counters of htim2 and htim5.
+ * It is called internally by vTimebaseInit().
+ */
 static void prvSetTime( const struct freertos_timespec * ts )
 {
     prvStop();
@@ -40,6 +57,14 @@ static void prvSetTime( const struct freertos_timespec * ts )
     prvStart();
 }
 
+/**
+ * @brief Gets the current time of the timebase.
+ * 
+ * @param ts Pointer to a freertos_timespec structure to store the current time.
+ * 
+ * This function retrieves the current time of the timebase by reading the counters of htim2 and htim5.
+ * It is called internally by vTimebaseInit().
+ */
 static void prvGetTime( struct freertos_timespec * ts )
 {
     uint32_t temp;
@@ -100,6 +125,12 @@ static void prvAddOffset( struct freertos_timespec * ts,
     prvStart();
 }
 
+/**
+ * @brief Initializes the timebase.
+ * 
+ * This function initializes the timebase by setting the function pointers of xTb to the corresponding functions.
+ * It also calls xTimebaseHandleSet() to set the timebase handle and vTimebaseStart() to start the timebase.
+ */
 void vTimebaseInit( void )
 {
     TimebaseHandle_t xTb;

@@ -1,3 +1,12 @@
+/**
+ * @file logger.c
+ * @brief This file contains the implementation of a logger module for printing log messages.
+ *
+ * The logger module provides functions for printing log messages to a buffer and periodically
+ * printing the buffer contents to a UART peripheral. It uses FreeRTOS tasks and semaphores for
+ * synchronization.
+ */
+
 #include "logger.h"
 #include "peripherals.h"
 #include "FreeRTOS.h"
@@ -32,7 +41,13 @@ StackType_t xLoggerStack[ LOGGER_STACK_SIZE ];
 
 StaticSemaphore_t xLoggerSemaphoreBuffer;
 
+/// @brief Update the logger buffer with the contents of the copy buffer.
+/// @param usRequiredLen  The number of bytes to copy from the copy buffer to the logger buffer.
 void prvUpdateFromCopyBuffer( uint16_t usRequiredLen );
+
+/// @brief Print a string to the UART peripheral.
+/// @param pcStr 
+/// @param usLen 
 void prvPutString( char * const pcStr,
                    uint32_t usLen );
 
@@ -44,6 +59,8 @@ void prvLoggerTask( void * const pvParameters );
 
 /**** public functions ****/
 
+/// @brief Initialize the logger module.
+/// @param  
 void vLoggerInit( void )
 {
     xLoggerData.xLock = xSemaphoreCreateMutexStatic( &xLoggerSemaphoreBuffer );
@@ -60,6 +77,9 @@ void vLoggerInit( void )
                                            );
 }
 
+/// @brief Print a log message to the logger buffer.
+/// @param format 
+/// @param  
 void vLoggerPrintFromISR( const char * format,
                           ... )
 {
@@ -101,6 +121,9 @@ void vLoggerPrintFromISR( const char * format,
     /* xHigherPriorityTaskWoken currently unused */
 }
 
+/// @brief Print a log message to the logger buffer.
+/// @param format 
+/// @param  
 void vLoggerPrint( const char * format,
                    ... )
 {
@@ -139,6 +162,9 @@ void vLoggerPrint( const char * format,
     va_end( args );
 }
 
+/// @brief Print a log message to the logger buffer and append a newline character.
+/// @param format 
+/// @param  
 void vLoggerPrintline( const char * format,
                        ... )
 {
@@ -195,6 +221,8 @@ void vLoggerPrintline( const char * format,
 
 /**** private functions ****/
 
+/// @brief Update the logger buffer with the contents of the copy buffer.
+/// @param usRequiredLen The number of bytes to copy from the copy buffer to the logger buffer.
 void prvUpdateFromCopyBuffer( uint16_t usRequiredLen )
 {
     uint16_t usDistanceToEndBuffer, usNextWriteIndex;
@@ -224,6 +252,9 @@ void prvUpdateFromCopyBuffer( uint16_t usRequiredLen )
     xLoggerData.usWriteIndex = usNextWriteIndex;
 }
 
+/// @brief Print a string to the UART peripheral.
+/// @param pcStr 
+/// @param usLen 
 void prvPutString( char * const pcStr,
                    uint32_t usLen )
 {
@@ -236,6 +267,8 @@ void prvPutString( char * const pcStr,
 
 #define TIMEOUT_STRING    "[Warning] Detected timeout in debug output\r\n"
 
+/// @brief Task that periodically prints the logger buffer contents to a UART peripheral.
+/// @param pvParameters 
 void prvLoggerTask( void * const pvParameters )
 {
     int16_t sBytesToRead;

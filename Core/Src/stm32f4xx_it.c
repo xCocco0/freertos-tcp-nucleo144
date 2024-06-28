@@ -177,6 +177,8 @@ void TIM6_DAC_IRQHandler( void )
     /* USER CODE END TIM6_DAC_IRQn 1 */
 }
 
+/// @brief Callback function for TIM2.
+/// @param   None
 extern void vTIM2_Callback( void );
 extern TIM_HandleTypeDef htim2;
 
@@ -193,6 +195,8 @@ void TIM2_IRQHandler( void )
     /* USER CODE END TIM2_IRQn 1 */
 }
 
+/// @brief Callback function for TIM5.
+/// @param  None
 extern void vTIM5_Callback( void );
 extern TIM_HandleTypeDef htim5;
 

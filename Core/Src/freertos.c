@@ -132,7 +132,7 @@ void HAL_TIM_PeriodElapsedCallback( TIM_HandleTypeDef * htim )
 
     /* USER CODE END Callback 1 */
 }
-
+ 
 void vApplicationMallocFailedHook( void )
 {
     /* vApplicationMallocFailedHook() will only be called if
@@ -150,6 +150,9 @@ void vApplicationMallocFailedHook( void )
     configPRINTF( ( "Warning! Malloc failed\r\n" ) );
 }
 
+/// @brief Hook function that is called when a stack overflow is detected.
+/// @param pxTask 
+/// @param pcTaskName 
 void vApplicationStackOverflowHook( TaskHandle_t pxTask,
                                     char * pcTaskName )
 {

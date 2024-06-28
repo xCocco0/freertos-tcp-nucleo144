@@ -34,6 +34,7 @@ endif
 
 # optimization
 ifeq ($(DEBUG), 1)
+
 OPT = -Og -O0
 else
 OPT = -O3

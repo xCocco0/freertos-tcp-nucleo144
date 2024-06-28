@@ -1,3 +1,17 @@
+/**
+ * @file main_clocksync.c
+ * @brief This file contains the implementation of clock synchronization using FreeRTOS and FreeRTOS TSN.
+ *
+ * The code in this file demonstrates clock synchronization between a master and a slave device using FreeRTOS and FreeRTOS TSN.
+ * It includes functions for sending and receiving synchronization messages, as well as handling timestamps.
+ * The master device sends a sync message to the slave device, and the slave device responds with a follow-up message.
+ * The code also includes functions for sending and receiving ping messages between the devices.
+ *
+ * @note This code assumes the use of IPv4 addresses and UDP sockets.
+ * @note The IP addresses and MAC addresses used in this code are placeholders and should be replaced with actual addresses.
+ *
+ */
+
 #include <string.h>
 
 #include "main.h"
@@ -10,6 +24,7 @@
 #include "FreeRTOS_TSN_Sockets.h"
 #include "FreeRTOS_TSN_Timestamp.h"
 #include "FreeRTOS_TSN_Timebase.h"
+
 
 #define PORT               10001
 #define PORT_PING          10002
@@ -367,6 +382,7 @@ void vTaskSyncMaster( void * pvArgument )
         .msg_control    = &cbuf.data,
         .msg_controllen = sizeof( cbuf ),
     };
+
     struct freertos_timespec ts;
 
     BaseType_t xSyncID = 0;
@@ -486,8 +502,14 @@ void vTaskSyncSlave( void * pvArgument )
         vTaskDelay( 1000U );
     }
 
+	  /* 
+	  * Send a ping to the master device to establish a connection.
+  	*/
     /*vPing( &xMasterAddr ); */
 
+	/*
+	* Receive sync message from the master device.
+	*/
     char iobuf[ 128 ];
     union
     {

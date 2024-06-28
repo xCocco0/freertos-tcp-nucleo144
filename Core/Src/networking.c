@@ -10,7 +10,8 @@
 #include "FreeRTOS_IP.h"
 #include "FreeRTOS_Sockets.h"
 
-/* This is called when network is connected */
+/// @brief Hook function that is called when the network goes up or down.
+/// @param eNetworkEvent  The event that has occurred.
 void vApplicationIPNetworkEventHook( eIPCallbackEvent_t eNetworkEvent )
 {
     uint32_t ulIPAddress, ulNetMask, ulGatewayAddress, ulDNSServerAddress;
@@ -48,7 +49,12 @@ void vApplicationIPNetworkEventHook( eIPCallbackEvent_t eNetworkEvent )
     }
 }
 
-/* Generate TCP start seq no */
+/// @brief Hook function that is called when a TCP connection is established.
+/// @param ulSourceAddress 
+/// @param usSourcePort 
+/// @param ulDestinationAddress 
+/// @param usDestinationPort 
+/// @return The sequence number to use for the connection.
 uint32_t ulApplicationGetNextSequenceNumber( uint32_t ulSourceAddress,
                                              uint16_t usSourcePort,
                                              uint32_t ulDestinationAddress,
@@ -60,6 +66,9 @@ uint32_t ulApplicationGetNextSequenceNumber( uint32_t ulSourceAddress,
     return pulNumber;
 }
 
+/// @brief Hook function that is called to get a random number.
+/// @param pulValue 
+/// @return pdPASS if the random number was generated successfully, pdFAIL otherwise.
 BaseType_t xApplicationGetRandomNumber( uint32_t * pulValue )
 {
     HAL_StatusTypeDef xResult;

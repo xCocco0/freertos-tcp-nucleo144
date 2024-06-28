@@ -1,3 +1,8 @@
+/**
+ * @file peripherals.c
+ * @brief This file contains the implementation of peripheral initialization functions.
+ */
+
 #include "peripherals.h"
 
 UART_HandleTypeDef huart2;
@@ -12,12 +17,12 @@ RNG_HandleTypeDef hrng;
 
 CRC_HandleTypeDef hcrc;
 
-/**
- * @brief System Clock Configuration
- * @retval None
- */
+
+/// @brief System Clock Configuration
+/// @param  None
 void SystemClock_Config( void )
 {
+
     RCC_OscInitTypeDef RCC_OscInitStruct = { 0 };
     RCC_ClkInitTypeDef RCC_ClkInitStruct = { 0 };
 
@@ -58,10 +63,8 @@ void SystemClock_Config( void )
     }
 }
 
-/**
- * @brief Peripherals Common Clock Configuration
- * @retval None
- */
+/// @brief Peripherals Common Clock Configuration
+/// @param  None
 void PeriphCommonClock_Config( void )
 {
     RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = { 0 };
@@ -77,11 +80,9 @@ void PeriphCommonClock_Config( void )
     }
 }
 
-/**
- * @brief USART3 Initialization Function
- * @param None
- * @retval None
- */
+
+/// @brief USART3 Initialization Function
+/// @param  None
 void MX_USART3_UART_Init( void )
 {
     /* USER CODE BEGIN USART3_Init 0 */
@@ -110,6 +111,8 @@ void MX_USART3_UART_Init( void )
     /* USER CODE END USART3_Init 2 */
 }
 
+/// @brief USART2 Initialization Function
+/// @param  None
 void MX_USART2_UART_Init( void )
 {
     huart2.Instance = USART2;
@@ -127,11 +130,9 @@ void MX_USART2_UART_Init( void )
     }
 }
 
-/**
- * @brief USB_OTG_FS Initialization Function
- * @param None
- * @retval None
- */
+
+/// @brief USB_OTG_FS Initialization Function
+/// @param  None
 void MX_USB_OTG_FS_PCD_Init( void )
 {
     /* USER CODE BEGIN USB_OTG_FS_Init 0 */
@@ -162,11 +163,8 @@ void MX_USB_OTG_FS_PCD_Init( void )
     /* USER CODE END USB_OTG_FS_Init 2 */
 }
 
-/**
- * @brief GPIO Initialization Function
- * @param None
- * @retval None
- */
+/// @brief GPIO Initialization Function
+/// @param  None
 void MX_GPIO_Init( void )
 {
     GPIO_InitTypeDef GPIO_InitStruct = { 0 };
@@ -244,11 +242,8 @@ void MX_GPIO_Init( void )
 }
 
 
-/**
- * @brief RNG Initialization Function
- * @param None
- * @retval None
- */
+/// @brief RNG Initialization Function
+/// @param  None
 void MX_RNG_Init( void )
 {
     /* USER CODE BEGIN RNG_Init 0 */
@@ -270,6 +265,8 @@ void MX_RNG_Init( void )
     /* USER CODE END RNG_Init 2 */
 }
 
+/// @brief CRC Initialization Function
+/// @param  None
 void MX_CRC_Init( void )
 {
     /* USER CODE BEGIN CRC_Init 0 */
@@ -291,11 +288,9 @@ void MX_CRC_Init( void )
     /* USER CODE END CRC_Init 2 */
 }
 
-/**
- * @brief TIM2 Initialization Function
- * @param None
- * @retval None
- */
+
+/// @brief TIM2 Initialization Function
+/// @param  None
 void MX_TIM2_Init( void )
 {
     /* USER CODE BEGIN TIM2_Init 0 */
@@ -340,11 +335,8 @@ void MX_TIM2_Init( void )
     /* USER CODE END TIM2_Init 2 */
 }
 
-/**
- * @brief TIM5 Initialization Function
- * @param None
- * @retval None
- */
+/// @brief TIM5 Initialization Function
+/// @param  None
 void MX_TIM5_Init( void )
 {
     /* USER CODE BEGIN TIM5_Init 0 */
