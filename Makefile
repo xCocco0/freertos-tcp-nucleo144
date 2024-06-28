@@ -34,9 +34,10 @@ endif
 
 # optimization
 ifeq ($(DEBUG), 1)
-OPT = -Og
+
+OPT = -Og -O0
 else
-OPT = -O2
+OPT = -O3
 endif
 
 #######################################

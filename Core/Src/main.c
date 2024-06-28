@@ -20,10 +20,12 @@
 #ifdef DEBUG
 	#include "logger.h"
 #else
-	#define vLoggerInit()
+
+    #define vLoggerInit()
+    #define vLoggerPrintFromISR()
 #endif
 
-#define mainIS_MASTER 1
+#define mainIS_MASTER    0
 
 /* Private typedef -----------------------------------------------------------*/
 
@@ -36,12 +38,13 @@
 /// @brief IP configuration
 const uint8_t ucIPAddress[ ipIP_ADDRESS_LENGTH_BYTES ] =
 {
-	configIP_ADDR0, configIP_ADDR1, configIP_ADDR2,
-#if ( mainIS_MASTER == 1 )
-	configIP_ADDR3
-#else
-	configIP_ADDR3+1
-#endif
+
+    configIP_ADDR0, configIP_ADDR1, configIP_ADDR2,
+    #if ( mainIS_MASTER == 1 )
+        configIP_ADDR3
+    #else
+        configIP_ADDR3 + 1
+    #endif
 };
 /// @brief Netmask configuration
 const uint8_t ucNetMask[ ipIP_ADDRESS_LENGTH_BYTES ] =
@@ -61,13 +64,14 @@ const uint8_t ucDNSServerAddress[ ipIP_ADDRESS_LENGTH_BYTES ] =
 /// @brief MAC address configuration
 const uint8_t ucMACAddress[ ipMAC_ADDRESS_LENGTH_BYTES ] =
 {
-	configMAC_ADDR0, configMAC_ADDR1, configMAC_ADDR2,
-	configMAC_ADDR3, configMAC_ADDR4,
-#if ( mainIS_MASTER == 1 )
-	configMAC_ADDR5
-#else
-	configMAC_ADDR5+1
-#endif
+
+    configMAC_ADDR0, configMAC_ADDR1, configMAC_ADDR2,
+    configMAC_ADDR3, configMAC_ADDR4,
+    #if ( mainIS_MASTER == 1 )
+        configMAC_ADDR5
+    #else
+        configMAC_ADDR5 + 1
+    #endif
 };
 
 #define mainIPv6_ADRR               "fe80::dead:beef"
@@ -79,12 +83,15 @@ NetworkInterface_t xInterfaces[ 1 ];
 NetworkInterfaceConfig_t xInterfaceConfigs[ 1 ];
 NetworkEndPoint_t xEndPoints[ 2 ];
 
+TaskHandle_t xTaskLEDHandle;
+
 /* Private function prototypes -----------------------------------------------*/
 
 extern void vTaskUDPSendIPv4( void * argument );
 extern void vTaskUDPSendIPv6( void * argument );
 extern void vTaskTCPSendIPv4( void * argument );
 extern void vTaskTSNTest( void * argument );
+extern void vTaskTSNTestCBS( void * argument );
 extern void vTaskSyncMaster( void * argument );
 extern void vTaskSyncSlave( void * argument );
 
@@ -127,9 +134,15 @@ int main( void )
 
     configPRINTF( ( "Setting up network interface...\r\n" ) );
     pxTSN_FillInterfaceDescriptor( 0, &( xInterfaces[ 0 ] ), &( xInterfaceConfigs[ 0 ] ) );
-    //xInterfaceConfigs[ 0 ].xNumTags = 2;
-    //xInterfaceConfigs[ 0 ].usVLANTag = 0x3311;
-    //xInterfaceConfigs[ 0 ].usServiceVLANTag = 0x9955;
+
+    xInterfaceConfigs[ 0 ].xNumTags = 0;
+    #if 0
+        xInterfaceConfigs[ 0 ].xNumTags = 2;
+        xInterfaceConfigs[ 0 ].usVLANTag = 0;
+        xInterfaceConfigs[ 0 ].usServiceVLANTag = 0;
+        vlantagSET_PCP_FROM_TCI( xInterfaceConfigs[ 0 ].usVLANTag, vlantagCLASS_7 );
+        vlantagSET_PCP_FROM_TCI( xInterfaceConfigs[ 0 ].usServiceVLANTag, vlantagCLASS_0 );
+    #endif
 
     FreeRTOS_FillEndPoint(
         &( xInterfaces[ 0 ] ), &( xEndPoints[ 0 ] ), ucIPAddress,
@@ -157,26 +170,19 @@ int main( void )
     FreeRTOS_IPInit_Multi();
     configPRINTF( ( "Done!\r\n" ) );
 
-    /* In future these should be moved elsewhere
-     */
-    vNetworkQueueInit();
-    prvTSNController_Initialise();
-    vInitialiseTSNSockets();
-    vTimebaseInit();
-
     /* Task definitions---------------------------------------------------------*/
 
-    BaseType_t xRet;
-    /*xRet = xTaskCreate(vTaskUDPSendIPv4, "UDPSendIPv4", 1024, NULL, tskIDLE_PRIORITY+1, NULL); */
-    /*xRet = xTaskCreate(vTaskUDPSendIPv6, "UDPSendIPv6", 1024, NULL, tskIDLE_PRIORITY+1, NULL); */
-    /*xRet = xTaskCreate(vTaskTCPSendIPv4, "TCPSendIPv4", 1024, NULL, tskIDLE_PRIORITY+1, NULL); */
-    /*xRet = xTaskCreate( vTaskTSNTest, "TSNTest", 1024, NULL, tskIDLE_PRIORITY + 1, NULL ); */
+    /*( void ) xTaskCreate(vTaskUDPSendIPv4, "UDPSendIPv4", 1024, NULL, tskIDLE_PRIORITY+1, NULL); */
+    /*( void ) xTaskCreate(vTaskUDPSendIPv6, "UDPSendIPv6", 1024, NULL, tskIDLE_PRIORITY+1, NULL); */
+    /*( void ) xTaskCreate(vTaskTCPSendIPv4, "TCPSendIPv4", 1024, NULL, tskIDLE_PRIORITY+1, NULL); */
+    /*( void ) xTaskCreate( vTaskTSNTest, "TSNTest", 1024, NULL, tskIDLE_PRIORITY + 1, NULL ); */
+    /*( void ) xTaskCreate( vTaskTSNTestCBS, "TSNTestCBS", 1024, NULL, tskIDLE_PRIORITY + 1, NULL ); */
 
-	#if ( mainIS_MASTER == 1 )
-		xRet = xTaskCreate( vTaskSyncMaster, "Master", 1024, NULL, tskIDLE_PRIORITY + 1, NULL );
-	#else
-		xRet = xTaskCreate( vTaskSyncSlave, "Slave", 1024, NULL, tskIDLE_PRIORITY + 1, NULL );
-	#endif
+    #if ( mainIS_MASTER == 1 )
+        ( void ) xTaskCreate( vTaskSyncMaster, "Master", 1024, NULL, tskIDLE_PRIORITY + 1, NULL );
+    #else
+        ( void ) xTaskCreate( vTaskSyncSlave, "Slave", 1024, NULL, tskIDLE_PRIORITY + 1, NULL );
+    #endif
 
     vTaskStartScheduler();
 
@@ -203,7 +209,15 @@ void vTIM2_Callback( void )
 {
     if( xTaskGetSchedulerState() != taskSCHEDULER_NOT_STARTED )
     {
-        //vLoggerPrintFromISR( ( "[TIM2] Tac\r\n" ) );
+        /*vLoggerPrintFromISR( ( "[TIM2] Tac\r\n" ) ); */
+        if( __HAL_TIM_GET_COUNTER( &htim5 ) % 3 )
+        {
+            HAL_GPIO_WritePin( LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET );
+        }
+        else
+        {
+            HAL_GPIO_WritePin( LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET );
+        }
     }
 }
 
@@ -213,6 +227,8 @@ void vTIM5_Callback( void )
 {
     if( xTaskGetSchedulerState() != taskSCHEDULER_NOT_STARTED )
     {
+        /*HAL_GPIO_WritePin( LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET ); */
+        /*vTaskNotifyGiveFromISR( xTaskLEDHandle, NULL ); */
         vLoggerPrintFromISR( ( "[TIM5] Tic\r\n" ) );
     }
 }

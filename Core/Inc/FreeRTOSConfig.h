@@ -114,7 +114,7 @@
 #define configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY    5
 
 /* Interrupt priorities used by the kernel port layer itself.  These are generic
- * to all Cortex-M ports, and do not rely on any particular library functions. */
+* to all Cortex-M ports, and do not rely on any particular library functions. */
 #define configKERNEL_INTERRUPT_PRIORITY                 ( configLIBRARY_LOWEST_INTERRUPT_PRIORITY << ( 8 - configPRIO_BITS ) )
 
 /* !!!! configMAX_SYSCALL_INTERRUPT_PRIORITY must not be set to zero !!!!
@@ -173,7 +173,7 @@
 
 #define configIP_ADDR0    169U
 #define configIP_ADDR1    254U
-#define configIP_ADDR2    174U
+#define configIP_ADDR2    151U
 #define configIP_ADDR3    43U
 
 /* Default gateway IP address configuration.  Used in ipconfigUSE_DNS is set to
@@ -181,7 +181,7 @@
 
 #define configGATEWAY_ADDR0    169U
 #define configGATEWAY_ADDR1    254U
-#define configGATEWAY_ADDR2    174U
+#define configGATEWAY_ADDR2    151U
 #define configGATEWAY_ADDR3    1U
 
 /* Default DNS server configuration.  OpenDNS addresses are 208.67.222.222 and
