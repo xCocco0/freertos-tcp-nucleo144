@@ -67,12 +67,6 @@ endif
 ######################################
 # C sources for Core (automatically selected)
 C_SOURCES_CORE = $(wildcard $(CORE_DIR)/Src/*.c)
-#Core/Src/main.c \
-Core/Src/freertos.c \
-Core/Src/stm32f4xx_it.c \
-Core/Src/stm32f4xx_hal_msp.c \
-Core/Src/stm32f4xx_hal_timebase_tim.c \
-Core/Src/printf_stdarg.c
 
 # C sources for Driver
 C_SOURCES_DRIVERS = \
@@ -228,11 +222,20 @@ $(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/source/FreeRTOS_UDP_IPv6.c \
 $(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/source/portable/BufferManagement/BufferAllocation_2.c \
 $(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/source/portable/NetworkInterface/STM32Fxx/stm32fxx_hal_eth.c \
 $(MIDDLEWARES_DIR)/FreeRTOS-Plus-TCP/source/portable/NetworkInterface/Common/phyHandling.c \
-$(MIDDLEWARES_DIR)/FreeRTOS-TSN-Compatibility-Layer/source/portable/NetworkInterface/Common/NetworkWrapper.c
-
-C_SOURCES_MIDDLEWARES += $(wildcard $(MIDDLEWARES_DIR)/FreeRTOS-TSN-Compatibility-Layer/source/*.c)
-C_SOURCES_MIDDLEWARES += $(wildcard $(MIDDLEWARES_DIR)/FreeRTOS-TSN-Compatibility-Layer/source/modules/BasicSchedulers/*.c)
-C_SOURCES_MIDDLEWARES += $(wildcard $(MIDDLEWARES_DIR)/FreeRTOS-TSN-Compatibility-Layer/source/modules/CreditBasedScheduler/*.c)
+\
+$(MIDDLEWARES_DIR)/FreeRTOS-TSN-Compatibility-Layer/source/portable/NetworkInterface/Common/NetworkWrapper.c \
+$(MIDDLEWARES_DIR)/FreeRTOS-TSN-Compatibility-Layer/source/FreeRTOS_TSN_Ancillary.c \
+$(MIDDLEWARES_DIR)/FreeRTOS-TSN-Compatibility-Layer/source/FreeRTOS_TSN_Controller.c \
+$(MIDDLEWARES_DIR)/FreeRTOS-TSN-Compatibility-Layer/source/FreeRTOS_TSN_DS.c \
+$(MIDDLEWARES_DIR)/FreeRTOS-TSN-Compatibility-Layer/source/FreeRTOS_TSN_NetworkSchedulerBlock.c \
+$(MIDDLEWARES_DIR)/FreeRTOS-TSN-Compatibility-Layer/source/FreeRTOS_TSN_NetworkScheduler.c \
+$(MIDDLEWARES_DIR)/FreeRTOS-TSN-Compatibility-Layer/source/FreeRTOS_TSN_NetworkSchedulerQueue.c \
+$(MIDDLEWARES_DIR)/FreeRTOS-TSN-Compatibility-Layer/source/FreeRTOS_TSN_Sockets.c \
+$(MIDDLEWARES_DIR)/FreeRTOS-TSN-Compatibility-Layer/source/FreeRTOS_TSN_Timebase.c \
+$(MIDDLEWARES_DIR)/FreeRTOS-TSN-Compatibility-Layer/source/FreeRTOS_TSN_Timestamp.c \
+$(MIDDLEWARES_DIR)/FreeRTOS-TSN-Compatibility-Layer/source/FreeRTOS_TSN_VLANTags.c \
+$(MIDDLEWARES_DIR)/FreeRTOS-TSN-Compatibility-Layer/source/modules/BasicSchedulers/BasicSchedulers.c \
+$(MIDDLEWARES_DIR)/FreeRTOS-TSN-Compatibility-Layer/source/modules/CreditBasedScheduler/SchedCBS.c
 
 C_SOURCES = $(C_SOURCES_CORE) $(C_SOURCES_DRIVERS) $(C_SOURCES_MIDDLEWARES)
 
@@ -316,8 +319,7 @@ C_INCLUDES_MIDDLEWARE = \
 -I$(MIDDLEWARES_DIR)/FreeRTOS-TSN-Compatibility-Layer/source/include \
 -I$(MIDDLEWARES_DIR)/FreeRTOS-TSN-Compatibility-Layer/source/portable/NetworkInterface/include \
 -I$(MIDDLEWARES_DIR)/FreeRTOS-TSN-Compatibility-Layer/source/modules/BasicSchedulers \
--I$(MIDDLEWARES_DIR)/FreeRTOS-TSN-Compatibility-Layer/source/modules/CreditBasedScheduler \
--I$(MIDDLEWARES_DIR)/FreeRTOS-TSN-Compatibility-Layer/source/modules/VLANTagFilter
+-I$(MIDDLEWARES_DIR)/FreeRTOS-TSN-Compatibility-Layer/source/modules/CreditBasedScheduler
 
 # Note: FreeRTOS-Plus-TCP/portable/NetworkInterface must be include before the drivers
 C_INCLUDES = $(C_INCLUDES_MIDDLEWARE) $(C_INCLUDES_CORE) $(C_INCLUDES_DRIVERS)

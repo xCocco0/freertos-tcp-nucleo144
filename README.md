@@ -8,6 +8,9 @@ This repository comprises part of various resources found online such that:
 - Code generated using STM32CubeMX ([ST Website](https://www.st.com/en/development-tools/stm32cubemx.html))
 - printf_stdarg ([Github Repository](https://github.com/htibosch/freertos_plus_projects))
 - stm32f4xx HAL drivers ([Github Repository](https://github.com/STMicroelectronics/stm32f4xx_hal_driver))
+- FreeRTOS kernel ([Github Repository](https://github.com/FreeRTOS/FreeRTOS-Kernel))
+- FreeRTOS Plus TCP ([Github Repository](https://github.com/FreeRTOS/FreeRTOS-Plus-TCP))
+- FreeRTOS TSN Compatibility Layer ([Github Repository](https://github.com/xCocco0/FreeRTOS-TSN-Compatibility-Layer))
 
 Please check the respective links for proper licensing.
 
