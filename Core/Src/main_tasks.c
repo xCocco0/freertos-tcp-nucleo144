@@ -103,8 +103,6 @@ void vTaskTSNTest( void * argvument )
     BaseType_t xRet;
     BaseType_t xSockOpt;
 
-    struct freertos_timespec * ts;
-
     /* -- create socket -- */
     configPRINTF( ( "Creating socket...\r\n" ) );
     TSNSocket_t xSock = FreeRTOS_TSN_socket( FREERTOS_AF_INET4,
@@ -167,7 +165,6 @@ void vTaskTSNTest( void * argvument )
         }
     }
 
-    UBaseType_t xSourceAddrLen;
     struct freertos_sockaddr xDestinationAddress, xSourceAddress;
     xDestinationAddress.sin_addr = FreeRTOS_inet_addr( DST_ADDR_4 );
     xDestinationAddress.sin_port = FreeRTOS_htons( DST_PORT );
@@ -221,6 +218,8 @@ void vTaskTSNTest( void * argvument )
     };
 
     void * dummy; /* for debugging */
+
+    struct freertos_timespec * ts;
 
     sprintf( cMsg, "Hello world n.%d", 0 );
     configPRINTF( ( "Sending message \"%s\"...", cMsg ) );
@@ -279,6 +278,7 @@ void vTaskTSNTest( void * argvument )
             }
         }
 
+        configPRINTF( ( "ts: %3lu.%09lu s:\r\n", ts[ 0 ].tv_sec, ts[ 0 ].tv_nsec ) );
         vTaskDelay( pdMS_TO_TICKS( 2000 ) );
     }
 }
@@ -292,8 +292,6 @@ void vTaskTSNTestCBS( void * argvument )
 {
     BaseType_t xRet;
     BaseType_t xSockOpt;
-
-    struct freertos_timespec * ts;
 
     /* -- create socket -- */
     configPRINTF( ( "Creating socket...\r\n" ) );
@@ -352,32 +350,34 @@ void vTaskTSNTestCBS( void * argvument )
     while( !xIsIPInARPCache( xDestinationAddress.sin_addr ) )
     {
         FreeRTOS_OutputARPRequest( xDestinationAddress.sin_addr );
-		configPRINTF(("Sending ARP request to %xip\r\n", xDestinationAddress.sin_addr ));
+        configPRINTF( ( "Sending ARP request to %xip\r\n", xDestinationAddress.sin_addr ) );
         vTaskDelay( 1000U );
     }
 
-	char cMsg[ 32 ];
+    char cMsg[ 32 ];
 
-	for( int i = 0; i < 10; ++i )
-	{
-		sprintf( cMsg, "Hello world n.%d", i );
-		configPRINTF( ( "Sending message \"%s\"...", cMsg ) );
+    for( int i = 0; i < 10; ++i )
+    {
+        sprintf( cMsg, "Hello world n.%d", i );
+        configPRINTF( ( "Sending message \"%s\"...", cMsg ) );
 
-		xRet = FreeRTOS_TSN_sendto( xSock, cMsg, configMIN( sizeof( cMsg ), strlen( cMsg ) ), 0,
-									&xDestinationAddress, sizeof( xDestinationAddress ) );
-		configPRINTF( ( "sent %d bytes.\r\n", xRet ) );
+        xRet = FreeRTOS_TSN_sendto( xSock, cMsg, configMIN( sizeof( cMsg ), strlen( cMsg ) ), 0,
+                                    &xDestinationAddress, sizeof( xDestinationAddress ) );
+        configPRINTF( ( "sent %d bytes.\r\n", xRet ) );
 
-		if( xRet < 0 )
-		{
-			configPRINTF( ( "sendto error %d.\r\n", xRet ) );
+        if( xRet < 0 )
+        {
+            configPRINTF( ( "sendto error %d.\r\n", xRet ) );
 
-			for( ; ; )
-			{
-			}
-		}
-	}
+            for( ; ; )
+            {
+            }
+        }
+    }
 
-	for(;;);
+    for( ; ; )
+    {
+    }
 }
 
 /**

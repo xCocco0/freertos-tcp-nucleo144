@@ -60,7 +60,7 @@ void vNetworkQueueInit( void )
     fifo = pxNetworkNodeCreateFIFO();
     ( void ) xNetworkSchedulerLinkQueue( fifo, queue3 );
 
-	prio_cbs = pxNetworkNodeCreatePrio( 2 );
+    prio_cbs = pxNetworkNodeCreatePrio( 2 );
     ( void ) xNetworkSchedulerLinkChild( prio_cbs, cbs, 0 );
     ( void ) xNetworkSchedulerLinkChild( prio_cbs, fifo2, 1 );
 
@@ -69,15 +69,15 @@ void vNetworkQueueInit( void )
     ( void ) xNetworkSchedulerLinkChild( prio, prio_cbs, 1 );
     ( void ) xNetworkSchedulerLinkChild( prio, fifo, 2 );
 
-	/*
-	 *              +-0---------------->[fifoHP]->queue1
-	 *              |
-	 *              |               +-0->[cbs]->queue2_s
-	 * root->[prio]-+-1->[prio_cbs]-|
-	 *              |               +-1->[fifo2]->queue2_r
-	 *              |
-	 *              +-2---------------->[fifo]->queue3
-	 */
+    /*
+     *              +-0---------------->[fifoHP]->queue1
+     *              |
+     *              |               +-0->[cbs]->queue2_s
+     * root->[prio]-+-1->[prio_cbs]-|
+     *              |               +-1->[fifo2]->queue2_r
+     *              |
+     *              +-2---------------->[fifo]->queue3
+     */
 
     ( void ) xNetworkQueueAssignRoot( prio );
 }

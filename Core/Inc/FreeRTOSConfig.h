@@ -173,7 +173,7 @@
 
 #define configIP_ADDR0    169U
 #define configIP_ADDR1    254U
-#define configIP_ADDR2    174U
+#define configIP_ADDR2    151U
 #define configIP_ADDR3    43U
 
 /* Default gateway IP address configuration.  Used in ipconfigUSE_DNS is set to
@@ -181,7 +181,7 @@
 
 #define configGATEWAY_ADDR0    169U
 #define configGATEWAY_ADDR1    254U
-#define configGATEWAY_ADDR2    174U
+#define configGATEWAY_ADDR2    151U
 #define configGATEWAY_ADDR3    1U
 
 /* Default DNS server configuration.  OpenDNS addresses are 208.67.222.222 and

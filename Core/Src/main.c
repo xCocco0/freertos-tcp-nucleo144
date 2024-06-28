@@ -18,6 +18,7 @@
     #include "logger.h"
 #else
     #define vLoggerInit()
+    #define vLoggerPrintFromISR()
 #endif
 
 #define mainIS_MASTER    0
@@ -120,14 +121,14 @@ int main( void )
     configPRINTF( ( "Setting up network interface...\r\n" ) );
     pxTSN_FillInterfaceDescriptor( 0, &( xInterfaces[ 0 ] ), &( xInterfaceConfigs[ 0 ] ) );
 
-    xInterfaceConfigs[ 0 ].xNumTags = 0; 
-	#if 1
-		xInterfaceConfigs[ 0 ].xNumTags = 2; 
-		xInterfaceConfigs[ 0 ].usVLANTag = 0;
-		xInterfaceConfigs[ 0 ].usServiceVLANTag = 0; 
-		vlantagSET_PCP_FROM_TCI( xInterfaceConfigs[ 0 ].usVLANTag, vlantagCLASS_7 );
-		vlantagSET_PCP_FROM_TCI( xInterfaceConfigs[ 0 ].usServiceVLANTag, vlantagCLASS_0 );
-	#endif
+    xInterfaceConfigs[ 0 ].xNumTags = 0;
+    #if 0
+        xInterfaceConfigs[ 0 ].xNumTags = 2;
+        xInterfaceConfigs[ 0 ].usVLANTag = 0;
+        xInterfaceConfigs[ 0 ].usServiceVLANTag = 0;
+        vlantagSET_PCP_FROM_TCI( xInterfaceConfigs[ 0 ].usVLANTag, vlantagCLASS_7 );
+        vlantagSET_PCP_FROM_TCI( xInterfaceConfigs[ 0 ].usServiceVLANTag, vlantagCLASS_0 );
+    #endif
 
     FreeRTOS_FillEndPoint(
         &( xInterfaces[ 0 ] ), &( xEndPoints[ 0 ] ), ucIPAddress,
@@ -155,29 +156,19 @@ int main( void )
     FreeRTOS_IPInit_Multi();
     configPRINTF( ( "Done!\r\n" ) );
 
-    /* In future these should be moved elsewhere
-     */
-    vNetworkQueueInit();
-    prvTSNController_Initialise();
-    vInitialiseTSNSockets();
-    vTimebaseInit();
-
     /* Task definitions---------------------------------------------------------*/
 
-    BaseType_t xRet;
-    /*xRet = xTaskCreate(vTaskUDPSendIPv4, "UDPSendIPv4", 1024, NULL, tskIDLE_PRIORITY+1, NULL); */
-    /*xRet = xTaskCreate(vTaskUDPSendIPv6, "UDPSendIPv6", 1024, NULL, tskIDLE_PRIORITY+1, NULL); */
-    /*xRet = xTaskCreate(vTaskTCPSendIPv4, "TCPSendIPv4", 1024, NULL, tskIDLE_PRIORITY+1, NULL); */
-    /*xRet = xTaskCreate( vTaskTSNTest, "TSNTest", 1024, NULL, tskIDLE_PRIORITY + 1, NULL ); */
-    xRet = xTaskCreate( vTaskTSNTestCBS, "TSNTestCBS", 1024, NULL, tskIDLE_PRIORITY + 1, NULL );
+    /*( void ) xTaskCreate(vTaskUDPSendIPv4, "UDPSendIPv4", 1024, NULL, tskIDLE_PRIORITY+1, NULL); */
+    /*( void ) xTaskCreate(vTaskUDPSendIPv6, "UDPSendIPv6", 1024, NULL, tskIDLE_PRIORITY+1, NULL); */
+    /*( void ) xTaskCreate(vTaskTCPSendIPv4, "TCPSendIPv4", 1024, NULL, tskIDLE_PRIORITY+1, NULL); */
+    /*( void ) xTaskCreate( vTaskTSNTest, "TSNTest", 1024, NULL, tskIDLE_PRIORITY + 1, NULL ); */
+    /*( void ) xTaskCreate( vTaskTSNTestCBS, "TSNTestCBS", 1024, NULL, tskIDLE_PRIORITY + 1, NULL ); */
 
-	#if 0
-		#if ( mainIS_MASTER == 1 )
-			xRet = xTaskCreate( vTaskSyncMaster, "Master", 1024, NULL, tskIDLE_PRIORITY + 1, NULL );
-		#else
-			xRet = xTaskCreate( vTaskSyncSlave, "Slave", 1024, NULL, tskIDLE_PRIORITY + 1, NULL );
-		#endif
-	#endif
+    #if ( mainIS_MASTER == 1 )
+        ( void ) xTaskCreate( vTaskSyncMaster, "Master", 1024, NULL, tskIDLE_PRIORITY + 1, NULL );
+    #else
+        ( void ) xTaskCreate( vTaskSyncSlave, "Slave", 1024, NULL, tskIDLE_PRIORITY + 1, NULL );
+    #endif
 
     vTaskStartScheduler();
 

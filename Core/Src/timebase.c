@@ -15,6 +15,8 @@
 #define TIM2_TO_NS( cnt )     ( ( uint32_t ) ( ( cnt ) * ( ( double ) 1000 / SMALL_FREQ_MHZ ) ) )
 #define TIM5_TO_SEC( cnt )    ( ( uint32_t ) ( ( cnt ) / BIG_FREQ ) )
 
+#define TIM2_PERIOD_TICKS    ( 168000000UL )
+
 static void prvStart( void )
 {
     HAL_TIM_Base_Start_IT( &htim5 );
@@ -51,6 +53,53 @@ static void prvGetTime( struct freertos_timespec * ts )
     while( temp != ts->tv_sec );
 }
 
+static void prvAddOffset( struct freertos_timespec * ts,
+                          BaseType_t xPositive )
+{
+    uint32_t register ulOffset2, ulOffset5, ulTime2, ulTime5;
+
+    ulOffset2 = NS_TO_TIM2( ts->tv_nsec );
+    ulOffset5 = SEC_TO_TIM5( ts->tv_sec );
+
+    prvStop();
+
+    ulTime2 = __HAL_TIM_GET_COUNTER( &htim2 );
+    ulTime5 = __HAL_TIM_GET_COUNTER( &htim5 );
+
+    if( xPositive != pdFALSE )
+    {
+        /* Note that this will never overflow the 32 bits registers */
+        ulTime2 = ulTime2 + ulOffset2;
+
+        if( ulTime2 > TIM2_PERIOD_TICKS )
+        {
+            ++ulOffset5;
+            ulTime2 %= TIM2_PERIOD_TICKS;
+        }
+
+        ulTime5 = ulTime5 + ulOffset5;
+    }
+    else
+    {
+        if( ulTime2 >= ulOffset2 )
+        {
+            ulTime2 -= ulOffset2;
+        }
+        else
+        {
+            ulTime2 = TIM2_PERIOD_TICKS - ( ulOffset2 - ulTime2 );
+            ++ulOffset5;
+        }
+
+        ulTime5 = ( ulTime5 >= ulOffset5 ) ? ( ulTime5 - ulOffset5 ) : ( 0 );
+    }
+
+    __HAL_TIM_SET_COUNTER( &htim2, ulTime2 );
+    __HAL_TIM_SET_COUNTER( &htim5, ulTime5 );
+
+    prvStart();
+}
+
 void vTimebaseInit( void )
 {
     TimebaseHandle_t xTb;
@@ -59,6 +108,7 @@ void vTimebaseInit( void )
     xTb.fnStop = prvStop;
     xTb.fnSetTime = prvSetTime;
     xTb.fnGetTime = prvGetTime;
+    xTb.fnAdjTime = prvAddOffset;
 
     configASSERT( xTimebaseHandleSet( &xTb ) != pdFAIL );
 

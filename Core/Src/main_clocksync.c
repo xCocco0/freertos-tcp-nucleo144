@@ -13,8 +13,8 @@
 
 #define PORT               10001
 #define PORT_PING          10002
-#define MASTER_IP          "169.254.174.43"
-#define SLAVE_IP           "169.254.174.44"
+#define MASTER_IP          "169.254.151.43"
+#define SLAVE_IP           "169.254.151.44"
 #define MASTER_MAC         { 0x00, 0x80, 0xE1, 0x00, 0x00, 0x01 }
 #define SLAVE_MAC          { 0x00, 0x80, 0xE1, 0x00, 0x00, 0x02 }
 #define DELAY_ON_ERR_MS    ( 1000 )
@@ -30,44 +30,46 @@
 
 /* Private function definitions */
 
-static void vPing( struct freertos_sockaddr * const pxAddr )
-{
-    Socket_t xSocket = FreeRTOS_socket( FREERTOS_AF_INET4, FREERTOS_SOCK_DGRAM, FREERTOS_IPPROTO_UDP );
-
-    struct freertos_sockaddr xSourceAddr, xDestinationAddr = *pxAddr;
-
-    xSourceAddr.sin_port = FreeRTOS_htons( PORT_PING );
-    xSourceAddr.sin_family = FREERTOS_AF_INET4;
-
-    if( pxAddr->sin_addr == FreeRTOS_inet_addr( MASTER_IP ) )
+#if 0
+    static void vPing( struct freertos_sockaddr * const pxAddr )
     {
-        xSourceAddr.sin_addr = FreeRTOS_inet_addr( SLAVE_IP );
+        Socket_t xSocket = FreeRTOS_socket( FREERTOS_AF_INET4, FREERTOS_SOCK_DGRAM, FREERTOS_IPPROTO_UDP );
+
+        struct freertos_sockaddr xSourceAddr, xDestinationAddr = *pxAddr;
+
+        xSourceAddr.sin_port = FreeRTOS_htons( PORT_PING );
+        xSourceAddr.sin_family = FREERTOS_AF_INET4;
+
+        if( pxAddr->sin_addr == FreeRTOS_inet_addr( MASTER_IP ) )
+        {
+            xSourceAddr.sin_addr = FreeRTOS_inet_addr( SLAVE_IP );
+        }
+        else
+        {
+            xSourceAddr.sin_addr = FreeRTOS_inet_addr( MASTER_IP );
+        }
+
+        xDestinationAddr.sin_port = FreeRTOS_htons( PORT_PING );
+
+        FreeRTOS_bind( xSocket, &xSourceAddr, sizeof( xSourceAddr ) );
+
+        TickType_t xTimeout = pdMS_TO_TICKS( 10000 );
+        FreeRTOS_setsockopt( xSocket, 0, FREERTOS_SO_SNDTIMEO, &xTimeout, sizeof( xTimeout ) );
+        char cMsg[] = "hello";
+        BaseType_t xRet = FreeRTOS_sendto( xSocket, cMsg, sizeof( cMsg ), 0, &xDestinationAddr, sizeof( xDestinationAddr ) );
+        configPRINTF( ( "Ping request\r\n" ) );
+
+        vTaskDelay( 1000 );
+        xRet = FreeRTOS_sendto( xSocket, cMsg, sizeof( cMsg ), 0, &xDestinationAddr, sizeof( xDestinationAddr ) );
+        vTaskDelay( 1000 );
+        xRet = FreeRTOS_sendto( xSocket, cMsg, sizeof( cMsg ), 0, &xDestinationAddr, sizeof( xDestinationAddr ) );
+
+        xRet = FreeRTOS_recvfrom( xSocket, cMsg, sizeof( cMsg ), 0, NULL, NULL );
+        configPRINTF( ( "Ping received reply\r\n" ) );
+
+        vTaskDelay( 1000 );
     }
-    else
-    {
-        xSourceAddr.sin_addr = FreeRTOS_inet_addr( MASTER_IP );
-    }
-
-    xDestinationAddr.sin_port = FreeRTOS_htons( PORT_PING );
-
-    FreeRTOS_bind( xSocket, &xSourceAddr, sizeof( xSourceAddr ) );
-
-    TickType_t xTimeout = pdMS_TO_TICKS( 10000 );
-    FreeRTOS_setsockopt( xSocket, 0, FREERTOS_SO_SNDTIMEO, &xTimeout, sizeof( xTimeout ) );
-    char cMsg[] = "hello";
-    BaseType_t xRet = FreeRTOS_sendto( xSocket, cMsg, sizeof( cMsg ), 0, &xDestinationAddr, sizeof( xDestinationAddr ) );
-    configPRINTF( ( "Ping request\r\n" ) );
-
-    vTaskDelay( 1000 );
-    xRet = FreeRTOS_sendto( xSocket, cMsg, sizeof( cMsg ), 0, &xDestinationAddr, sizeof( xDestinationAddr ) );
-    vTaskDelay( 1000 );
-    xRet = FreeRTOS_sendto( xSocket, cMsg, sizeof( cMsg ), 0, &xDestinationAddr, sizeof( xDestinationAddr ) );
-
-    xRet = FreeRTOS_recvfrom( xSocket, cMsg, sizeof( cMsg ), 0, NULL, NULL );
-    configPRINTF( ( "Ping received reply\r\n" ) );
-
-    vTaskDelay( 1000 );
-}
+#endif /* if 0 */
 
 static void prvResetMsgh( struct msghdr * pxMsgh,
                           size_t uxControlBufSize,
@@ -255,38 +257,31 @@ static void prvSyncTimebase( struct freertos_timespec * ts )
     {
         /* Val1 > Val2 */
         xTimespecDiff( &xTimeDiff, &xVal1, &xVal2 );
-        configPRINTF( ( "- " ) );
         xPlus = pdFALSE;
     }
     else
     {
         /* Val1 <= Val2 */
         xTimespecDiff( &xTimeDiff, &xVal2, &xVal1 );
-        configPRINTF( ( "+ " ) );
         xPlus = pdTRUE;
     }
 
     xTimespecDiv( &xTimeDiff, &xTimeDiff, 2 );
 
-    configPRINTF( ( "%3lu.%09lu s:\r\n\n", xTimeDiff.tv_sec, xTimeDiff.tv_nsec ) );
+    configPRINTF( ( "=> %c%lu.%09lu s\r\n\n", ( xPlus == pdTRUE ) ? '+' : '-', xTimeDiff.tv_sec, xTimeDiff.tv_nsec ) );
 
     /* Offset is computed, now adjust the timebase */
 
     vTaskSuspendAll();
+
     vTimebaseGetTime( &xCurrentTime );
     vLoggerPrintFromISR( "Current time before: %lu.%09lus\r\n", xCurrentTime.tv_sec, xCurrentTime.tv_nsec );
 
-    if( xPlus == pdTRUE )
-    {
-        xTimespecSum( &xCurrentTime, &xCurrentTime, &xTimeDiff );
-    }
-    else
-    {
-        xTimespecDiff( &xCurrentTime, &xCurrentTime, &xTimeDiff );
-    }
+    vTimebaseAdjTime( &xTimeDiff, xPlus );
 
-    vTimebaseSetTime( &xCurrentTime );
-    vLoggerPrintFromISR( "Current time after: %lu.%09lus\r\n", xCurrentTime.tv_sec, xCurrentTime.tv_nsec );
+    vTimebaseGetTime( &xCurrentTime );
+    vLoggerPrintFromISR( "Current time after:  %lu.%09lus\r\n", xCurrentTime.tv_sec, xCurrentTime.tv_nsec );
+
     ( void ) xTaskResumeAll();
 }
 
