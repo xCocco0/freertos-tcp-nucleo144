@@ -25,13 +25,9 @@
 #include "FreeRTOS_TSN_Timestamp.h"
 #include "FreeRTOS_TSN_Timebase.h"
 
-#define xstr(x) str(x)
-#define str(x) #x
-#define GLUE_IP(x1,x2,x3,x4) "" xstr(x1) "." xstr(x2) "." xstr(x3) "." xstr(x4) ""
-
 #define PORT               10001
-#define MASTER_IP          GLUE_IP(configIP_ADDR0, configIP_ADDR1, configIP_ADDR2, configIP_ADDR3)
-#define SLAVE_IP           GLUE_IP(configIP_ADDR0, configIP_ADDR1, configIP_ADDR2, configIP_ADDR3 + 1)
+#define MASTER_IP          FreeRTOS_inet_addr_quick( configIP_ADDR0, configIP_ADDR1, configIP_ADDR2, configIP_ADDR3 );
+#define SLAVE_IP           FreeRTOS_inet_addr_quick( configIP_ADDR0, configIP_ADDR1, configIP_ADDR2, configIP_ADDR3 + 1 );
 #define MASTER_MAC         { configMAC_ADDR0, configMAC_ADDR1, configMAC_ADDR2, \
                            configMAC_ADDR3, configMAC_ADDR4, configMAC_ADDR5 }
 #define SLAVE_MAC         { configMAC_ADDR0, configMAC_ADDR1, configMAC_ADDR2, \
@@ -61,13 +57,13 @@
         xSourceAddr.sin_port = FreeRTOS_htons( PORT_PING );
         xSourceAddr.sin_family = FREERTOS_AF_INET4;
 
-        if( pxAddr->sin_addr == FreeRTOS_inet_addr( MASTER_IP ) )
+        if( pxAddr->sin_addr == MASTER_IP )
         {
-            xSourceAddr.sin_addr = FreeRTOS_inet_addr( SLAVE_IP );
+            xSourceAddr.sin_addr = SLAVE_IP;
         }
         else
         {
-            xSourceAddr.sin_addr = FreeRTOS_inet_addr( MASTER_IP );
+            xSourceAddr.sin_addr = MASTER_IP;
         }
 
         xDestinationAddr.sin_port = FreeRTOS_htons( PORT_PING );
@@ -342,14 +338,14 @@ void vTaskSyncMaster( void * pvArgument )
     xRet = FreeRTOS_TSN_setsockopt( xSocket, FREERTOS_SOL_SOCKET, FREERTOS_SO_RCVTIMEO, &uxTimeout, sizeof( uxTimeout ) );
     HANDLE_ERROR( xRet, xRet != 0 );
 
-    char cMsg[ 32 ];
+    char cMsg[ 64 ];
 
     struct freertos_sockaddr xSlaveAddr, xMasterAddr, xSourceAddr;
     xMasterAddr.sin_port = FreeRTOS_htons( PORT );
-    xMasterAddr.sin_addr = FreeRTOS_inet_addr( MASTER_IP );
+    xMasterAddr.sin_addr = MASTER_IP;
     xMasterAddr.sin_family = FREERTOS_AF_INET4;
     xSlaveAddr.sin_port = FreeRTOS_htons( PORT );
-    xSlaveAddr.sin_addr = FreeRTOS_inet_addr( SLAVE_IP );
+    xSlaveAddr.sin_addr = SLAVE_IP;
     xSlaveAddr.sin_family = FREERTOS_AF_INET4;
     socklen_t uxSourceAddrLen;
 
@@ -485,15 +481,15 @@ void vTaskSyncSlave( void * pvArgument )
     xRet = FreeRTOS_TSN_setsockopt( xSocket, FREERTOS_SOL_SOCKET, FREERTOS_SO_RCVTIMEO, &uxTimeout, sizeof( uxTimeout ) );
     HANDLE_ERROR( xRet, xRet != 0 );
 
-    char cMsg[ 32 ];
+    char cMsg[ 64 ];
 
     struct freertos_sockaddr xSlaveAddr, xMasterAddr, xSourceAddr;
     socklen_t uxSourceAddrLen;
     xMasterAddr.sin_port = FreeRTOS_htons( PORT );
-    xMasterAddr.sin_addr = FreeRTOS_inet_addr( MASTER_IP );
+    xMasterAddr.sin_addr = MASTER_IP;
     xMasterAddr.sin_family = FREERTOS_AF_INET4;
     xSlaveAddr.sin_port = FreeRTOS_htons( PORT );
-    xSlaveAddr.sin_addr = FreeRTOS_inet_addr( SLAVE_IP );
+    xSlaveAddr.sin_addr = SLAVE_IP;
     xSlaveAddr.sin_family = FREERTOS_AF_INET4;
 
     xRet = FreeRTOS_TSN_bind( xSocket, &xSlaveAddr, sizeof( xSlaveAddr ) );

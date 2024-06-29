@@ -63,7 +63,6 @@ static void prvSetTime( const struct freertos_timespec * ts )
  * @param ts Pointer to a freertos_timespec structure to store the current time.
  * 
  * This function retrieves the current time of the timebase by reading the counters of htim2 and htim5.
- * It is called internally by vTimebaseInit().
  */
 static void prvGetTime( struct freertos_timespec * ts )
 {
@@ -78,6 +77,16 @@ static void prvGetTime( struct freertos_timespec * ts )
     while( temp != ts->tv_sec );
 }
 
+/**
+ * @brief Gets the current time of the timebase.
+ * 
+ * @param ts Pointer to a freertos_timespec structure to store the current time.
+ * @param xPositive pdTRUE if the offset is additive, pdFALSE otherwise
+ * 
+ * This function add the specified offset to the timebase. This is preferrable
+ * over the use of SetTime + GetTime before it create a smaller drift in the
+ * clock.
+ */
 static void prvAddOffset( struct freertos_timespec * ts,
                           BaseType_t xPositive )
 {
