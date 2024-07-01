@@ -35,6 +35,9 @@
 
 #define DELAY_ON_ERR_MS    ( 1000 )
 
+#ifndef GET_TIMEOUT_MS
+	#define GET_TIMEOUT_MS( x )    ( pdMS_TO_TICKS( x ) )
+#endif
 
 #define HANDLE_ERROR( var, cond )                                    \
     if( cond )                                                       \
@@ -138,7 +141,7 @@ static BaseType_t prvSendAndRetrieveTimestamp( TSNSocket_t xSocket,
             switch( cmsg->cmsg_type )
             {
                 case FREERTOS_SO_TIMESTAMPING:
-                    pxTimestamps = CMSG_DATA( cmsg );
+                    pxTimestamps = ( struct freertos_timespec * ) CMSG_DATA( cmsg );
                     *pxTime = pxTimestamps[ 0 ];
                     configPRINTF( ( "Acquired ts: %lu, %lu\r\n", pxTime->tv_sec, pxTime->tv_nsec ) );
                     prvResetMsgh( pxMsgh, uxControlBufSize, uxIovecSize );
@@ -228,7 +231,7 @@ static BaseType_t prvRecvPrefixedAndRetrieveTimestamp( TSNSocket_t xSocket,
                 switch( cmsg->cmsg_type )
                 {
                     case FREERTOS_SO_TIMESTAMPING:
-                        pxTimestamps = CMSG_DATA( cmsg );
+						pxTimestamps = ( struct freertos_timespec * ) CMSG_DATA( cmsg );
                         *pxTime = pxTimestamps[ 0 ];
                         configPRINTF( ( "Received ts: %lu, %lu\r\n", pxTime->tv_sec, pxTime->tv_nsec ) );
                         prvResetMsgh( pxMsgh, uxControlBufSize, uxIovecSize );
@@ -252,18 +255,18 @@ static BaseType_t prvRecvPrefixedAndRetrieveTimestamp( TSNSocket_t xSocket,
 
 static void prvSyncTimebase( struct freertos_timespec * ts )
 {
-    configPRINTF( ( "T1: %3lu.%09lu s:\r\n", ts[ 1 ].tv_sec, ts[ 1 ].tv_nsec ) );
-    configPRINTF( ( "T2: %3lu.%09lu.s:\r\n", ts[ 2 ].tv_sec, ts[ 2 ].tv_nsec ) );
-    configPRINTF( ( "T3: %3lu.%09lu s:\r\n", ts[ 3 ].tv_sec, ts[ 3 ].tv_nsec ) );
-    configPRINTF( ( "T4: %3lu.%09lu s:\r\n", ts[ 4 ].tv_sec, ts[ 4 ].tv_nsec ) );
+    configPRINTF( ( "T1: %3lu.%09lu s:\r\n", ts[ 0 ].tv_sec, ts[ 0 ].tv_nsec ) );
+    configPRINTF( ( "T2: %3lu.%09lu.s:\r\n", ts[ 1 ].tv_sec, ts[ 1 ].tv_nsec ) );
+    configPRINTF( ( "T3: %3lu.%09lu s:\r\n", ts[ 2 ].tv_sec, ts[ 2 ].tv_nsec ) );
+    configPRINTF( ( "T4: %3lu.%09lu s:\r\n", ts[ 3 ].tv_sec, ts[ 3 ].tv_nsec ) );
 
     /* (( t2 + t3 - t1 - t4 ) )/ 2 */
     /* underflow if t2 + t3 < t1 + t4 */
     struct freertos_timespec xTimeDiff, xVal1, xVal2, xCurrentTime;
     BaseType_t xPlus;
 
-    xTimespecSum( &xVal1, &ts[ 2 ], &ts[ 3 ] );
-    xTimespecSum( &xVal2, &ts[ 1 ], &ts[ 4 ] );
+    xTimespecSum( &xVal1, &ts[ 1 ], &ts[ 2 ] );
+    xTimespecSum( &xVal2, &ts[ 0 ], &ts[ 3 ] );
 
     configPRINTF( ( "val1: %3lu.%09lu s:\r\n", xVal1.tv_sec, xVal1.tv_nsec ) );
     configPRINTF( ( "val2: %3lu.%09lu s:\r\n", xVal2.tv_sec, xVal2.tv_nsec ) );
@@ -334,7 +337,7 @@ void vTaskSyncMaster( void * pvArgument )
 
     prvSocketTimestampEnable( xSocket );
 
-    TickType_t uxTimeout = pdMS_TO_TICKS( 1000 );
+    TickType_t uxTimeout = GET_TIMEOUT_MS( 1000 );
     xRet = FreeRTOS_TSN_setsockopt( xSocket, FREERTOS_SOL_SOCKET, FREERTOS_SO_RCVTIMEO, &uxTimeout, sizeof( uxTimeout ) );
     HANDLE_ERROR( xRet, xRet != 0 );
 
@@ -477,7 +480,7 @@ void vTaskSyncSlave( void * pvArgument )
 
     prvSocketTimestampEnable( xSocket );
 
-    TickType_t uxTimeout = pdMS_TO_TICKS( 1000 );
+    TickType_t uxTimeout = GET_TIMEOUT_MS( 1000 );
     xRet = FreeRTOS_TSN_setsockopt( xSocket, FREERTOS_SOL_SOCKET, FREERTOS_SO_RCVTIMEO, &uxTimeout, sizeof( uxTimeout ) );
     HANDLE_ERROR( xRet, xRet != 0 );
 
@@ -541,7 +544,7 @@ void vTaskSyncSlave( void * pvArgument )
     {
         /* Waiting for sync */
         prvSocketTimestampEnable( xSocket );
-        xRet = prvRecvPrefixedAndRetrieveTimestamp( xSocket, &xMsghdr, "Sync", sizeof( "Sync" ) - 1, &ts[ 2 ] );
+        xRet = prvRecvPrefixedAndRetrieveTimestamp( xSocket, &xMsghdr, "Sync", sizeof( "Sync" ) - 1, &ts[ 1 ] );
         prvSocketTimestampDisable( xSocket );
 
         if( xRet != 0 )
@@ -565,7 +568,7 @@ void vTaskSyncSlave( void * pvArgument )
             continue;
         }
 
-        sscanf( cMsg, "Followup %ld %lu,%lu", &xSyncID[ 1 ], &ts[ 1 ].tv_sec, &ts[ 1 ].tv_nsec );
+        sscanf( cMsg, "Followup %ld %lu,%lu", &xSyncID[ 1 ], &ts[ 0 ].tv_sec, &ts[ 0 ].tv_nsec );
 
         if( xSyncID[ 0 ] != xSyncID[ 1 ] )
         {
@@ -585,7 +588,7 @@ void vTaskSyncSlave( void * pvArgument )
             sprintf( cMsg, "Delayreq" );
 
             prvSocketTimestampEnable( xSocket );
-            prvSendAndRetrieveTimestamp( xSocket, cMsg, strnlen( cMsg, sizeof( cMsg ) ) + 1, &xMasterAddr, sizeof( xMasterAddr ), &xMsghdr, &ts[ 3 ] );
+            prvSendAndRetrieveTimestamp( xSocket, cMsg, strnlen( cMsg, sizeof( cMsg ) ) + 1, &xMasterAddr, sizeof( xMasterAddr ), &xMsghdr, &ts[ 2 ] );
             prvSocketTimestampDisable( xSocket );
 
             /* Receive delay resp */
@@ -600,7 +603,7 @@ void vTaskSyncSlave( void * pvArgument )
                 continue;
             }
 
-            sscanf( cMsg, "Delayresp %lu,%lu", &ts[ 4 ].tv_sec, &ts[ 4 ].tv_nsec );
+            sscanf( cMsg, "Delayresp %lu,%lu", &ts[ 3 ].tv_sec, &ts[ 3 ].tv_nsec );
 
             break;
         }
@@ -623,7 +626,7 @@ void vTaskSyncSlave( void * pvArgument )
             /* Waiting for sync */
 
             prvSocketTimestampEnable( xSocket );
-            xRet = prvRecvPrefixedAndRetrieveTimestamp( xSocket, &xMsghdr, "Sync", sizeof( "Sync" ) - 1, &ts[ 2 ] );
+            xRet = prvRecvPrefixedAndRetrieveTimestamp( xSocket, &xMsghdr, "Sync", sizeof( "Sync" ) - 1, &ts[ 1 ] );
             prvSocketTimestampDisable( xSocket );
 
             if( xRet != 0 )
@@ -648,7 +651,7 @@ void vTaskSyncSlave( void * pvArgument )
                 continue;
             }
 
-            sscanf( cMsg, "Followup %ld %lu,%lu", &xSyncID[ 1 ], &ts[ 1 ].tv_sec, &ts[ 1 ].tv_nsec );
+            sscanf( cMsg, "Followup %ld %lu,%lu", &xSyncID[ 1 ], &ts[ 0 ].tv_sec, &ts[ 0 ].tv_nsec );
 
             if( xSyncID[ 0 ] != xSyncID[ 1 ] )
             {

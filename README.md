@@ -42,3 +42,21 @@ This repository also contains a handy script ``setup``, which will call st-link 
 make install
 ```
 will call ``setup flash`` to flash the board.
+
+## Utilities
+
+The ``Utilities/`` directory contains other useful resources not properly part of the project.
+
+You can compile thoose by running
+```
+make utilities
+```
+
+Currently it includes the Linux port for the clock synchronization procedure.
+
+It requires a Linux OS and is run by calling
+```
+./Utilities/main_clocksync_linux [master|slave]
+```
+
+The slave part currently only print out timestamp values.
